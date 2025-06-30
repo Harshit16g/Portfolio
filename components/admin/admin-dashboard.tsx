@@ -89,7 +89,11 @@ function AdminDashboardContent() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="projects" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Projects
+          </TabsTrigger>
           <TabsTrigger value="connections" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
             Connections
@@ -107,6 +111,18 @@ function AdminDashboardContent() {
             Stats
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="projects" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Project Management</CardTitle>
+              <CardDescription>Add, edit, and delete portfolio projects.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ProjectsTable />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="connections" className="space-y-6">
           <Card>

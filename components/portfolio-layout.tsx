@@ -25,6 +25,7 @@ const navLinks = [
   { href: "/experience", label: "Experience" },
   { href: "/blog", label: "Blog" },
   { href: "/contact", label: "Contact" },
+  { href: "/admin/feedback", label: "Feedback" },
 ]
 
 export default function PortfolioLayout({
