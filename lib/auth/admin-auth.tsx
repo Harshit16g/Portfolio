@@ -14,7 +14,6 @@ interface AdminAuthContextType {
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined)
 
 const ADMIN_PASSWORD ="Amplify1601$"
-NEXT_PUBLIC_ADMIN_PASSWORD
 const SESSION_DURATION = 60 * 60 * 1000
 const AUTH_KEY = "portfolio_admin_auth"
 
