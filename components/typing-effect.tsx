@@ -11,7 +11,7 @@ interface TypingEffectProps {
 
 export function TypingEffect({
   texts,
-  typingSpeed = 100,
+  typingSpeed = 101,
   deletingSpeed = 50,
   delayBetweenTexts = 1500,
 }: TypingEffectProps) {
