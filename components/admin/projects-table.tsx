@@ -257,5 +257,3 @@ export function ProjectsTable() {
     </div>
   )
 }
-
-

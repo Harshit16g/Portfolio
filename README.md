@@ -56,7 +56,7 @@ This dynamic and responsive portfolio features:
 
 ## 🧪 Getting Started
 
-```bash
+\`\`\`bash
 # Clone the repository
 git clone https://github.com/harshitlodhi16/developer-portfolio.git
 
@@ -91,6 +91,3 @@ Now visit http://localhost:3000 🚀
 ---
 
 > Designed, built & maintained with love by Harshit Lodhi 💙
-
-
-
