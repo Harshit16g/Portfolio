@@ -1,89 +1,71 @@
 "use client"
 
-import type React from "react"
-import { useState, useEffect, createContext, useContext } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 interface AdminAuthContextType {
   isAuthenticated: boolean
-  login: (password: string) => boolean
-  logout: () => void
   loading: boolean
-  error: string | null
+  login: (password: string) => Promise<boolean>
+  logout: () => Promise<void>
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined)
 
-const ADMIN_PASSWORD ="Amplify1601$"
-const SESSION_DURATION = 60 * 60 * 1000
-const AUTH_KEY = "portfolio_admin_auth"
-
-export function useAdminAuth() {
-  const ctx = useContext(AdminAuthContext)
-  if (!ctx) throw new Error("useAdminAuth must be used within an AdminAuthProvider")
-  return ctx
-}
-
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
-    const raw = localStorage.getItem(AUTH_KEY)
-    if (raw) {
+    const checkAuth = async () => {
       try {
-        const { authenticated, timestamp } = JSON.parse(raw)
-        if (authenticated && Date.now() - timestamp < SESSION_DURATION) {
-          setIsAuthenticated(true)
-        } else {
-          localStorage.removeItem(AUTH_KEY)
-        }
-      } catch {
-        localStorage.removeItem(AUTH_KEY)
+        const response = await fetch("/api/auth/check", { credentials: "include" })
+        setIsAuthenticated(response.ok)
+      } catch (error) {
+        setIsAuthenticated(false)
+      } finally {
+        setLoading(false)
       }
     }
-    setLoading(false)
+    checkAuth()
   }, [])
 
-  const login = (password: string) => {
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true)
-      localStorage.setItem(
-        AUTH_KEY,
-        JSON.stringify({ authenticated: true, timestamp: Date.now() })
-      )
-      setError(null)
-      return true
-    }
-    setError("Invalid password")
-    return false
-  }
-
-  const logout = () => {
-    setIsAuthenticated(false)
-    localStorage.removeItem(AUTH_KEY)
-  }
-
-  useEffect(() => {
-    if (!isAuthenticated) return
-    const interval = setInterval(() => {
-      const raw = localStorage.getItem(AUTH_KEY)
-      if (!raw) return logout()
-      try {
-        const { timestamp } = JSON.parse(raw)
-        if (Date.now() - timestamp >= SESSION_DURATION) logout()
-      } catch {
-        logout()
+  const login = async (password: string) => {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+        credentials: "include",
+      })
+      if (response.ok) {
+        setIsAuthenticated(true)
+        return true
       }
-    }, 60000)
-    return () => clearInterval(interval)
-  }, [isAuthenticated])
+      return false
+    } catch (error) {
+      return false
+    }
+  }
+
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" })
+    setIsAuthenticated(false)
+    router.push("/admin")
+  }
 
   return (
-    <AdminAuthContext.Provider
-      value={{ isAuthenticated, login, logout, loading, error }}
-    >
+    <AdminAuthContext.Provider value={{ isAuthenticated, loading, login, logout }}>
       {children}
     </AdminAuthContext.Provider>
   )
+}
+
+export function useAdminAuth() {
+  const context = useContext(AdminAuthContext)
+  if (!context) {
+    throw new Error("useAdminAuth must be used within AdminAuthProvider")
+  }
+  return context
 }
