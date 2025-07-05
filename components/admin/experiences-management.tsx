@@ -120,15 +120,37 @@ export function ExperiencesManagement() {
   }
 
   const formatDateRange = (startDate: string, endDate: string | null, isCurrent: boolean) => {
-    const start = format(new Date(startDate), "MMM yyyy")
-    if (isCurrent) {
-      return `${start} - Present`
+    try {
+      // Validate startDate
+      if (!startDate) {
+        return "Invalid date"
+      }
+      
+      const startDateObj = new Date(startDate)
+      if (isNaN(startDateObj.getTime())) {
+        return "Invalid start date"
+      }
+      
+      const start = format(startDateObj, "MMM yyyy")
+      
+      if (isCurrent) {
+        return `${start} - Present`
+      }
+      
+      if (endDate) {
+        const endDateObj = new Date(endDate)
+        if (isNaN(endDateObj.getTime())) {
+          return `${start} - Invalid end date`
+        }
+        const end = format(endDateObj, "MMM yyyy")
+        return `${start} - ${end}`
+      }
+      
+      return start
+    } catch (error) {
+      console.error("Date formatting error:", error)
+      return "Invalid date format"
     }
-    if (endDate) {
-      const end = format(new Date(endDate), "MMM yyyy")
-      return `${start} - ${end}`
-    }
-    return start
   }
 
   const openEditDialog = (experience: ExperienceWithTechnologies) => {

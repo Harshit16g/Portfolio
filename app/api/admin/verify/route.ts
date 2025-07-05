@@ -2,11 +2,17 @@ import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { verify } from "jsonwebtoken"
 
-const JWT_SECRET = process.env.ADMIN_SECRET_KEY || "secure_admin_secret_key"
-
 export async function GET() {
   try {
-    const cookieStore = await cookies()
+    // Validate environment variables at runtime
+    if (!process.env.ADMIN_SECRET_KEY) {
+      console.error("CRITICAL: ADMIN_SECRET_KEY environment variable is not set!")
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
+    }
+
+    const JWT_SECRET = process.env.ADMIN_SECRET_KEY
+
+    const cookieStore = cookies()
     const token = cookieStore.get("admin-token")?.value
 
     if (!token) {

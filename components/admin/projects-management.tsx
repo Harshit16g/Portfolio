@@ -297,8 +297,13 @@ export function ProjectsManagement() {
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         {project.image_url && (
-                          <div className="w-8 h-8 rounded bg-muted flex-shrink-0" />
+                          <img 
+                            src={project.image_url} 
+                            alt={`${project.title} logo`} 
+                            className="w-8 h-8 rounded bg-muted flex-shrink-0 object-cover"
+                          />
                         )}
+                        {/* TODO: Add placeholder when image_url is missing */}
                         <div>
                           <div className="font-semibold">{project.title}</div>
                           <div className="text-sm text-muted-foreground truncate max-w-xs">
@@ -325,7 +330,18 @@ export function ProjectsManagement() {
                       {getStatusBadge(project.status || "active", project.is_featured)}
                     </TableCell>
                     <TableCell>
-                      {format(new Date(project.updated_at || project.created_at), "MMM dd, yyyy")}
+                      {(() => {
+                        const timestamp = project.updated_at || project.created_at
+                        if (!timestamp) {
+                          return "No date available"
+                        }
+                        try {
+                          return format(new Date(timestamp), "MMM dd, yyyy")
+                        } catch (error) {
+                          console.error("Date formatting error:", error)
+                          return "Invalid date"
+                        }
+                      })()}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
