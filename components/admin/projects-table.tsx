@@ -1,352 +1,414 @@
-"use client";
 
-import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger
-} from "@/components/ui/dialog";
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog"; // add if you have DialogHeader/DialogTitle in dialog
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-  ExternalLink,
-  Github,
-  PlusCircle,
-  Edit,
-  Trash2,
-  RefreshCw
-} from "lucide-react";
-import {
-  getAllProjects,
-  deleteProject,
-  createProject,
-  updateProject
-} from "@/lib/database/admin-queries";
+     "use client";
 
-// Project type definitions
-interface Project {
-  id?: string;
-  title: string;
-  description: string;
-  image_url: string;
-  project_url: string;
-  github_url: string;
-  is_featured: boolean;
-  sort_order: number;
-  live_url?: string;
-  repo_url?: string;
-  created_at?: string;
-}
+     import { useState, useEffect } from "react";
+     import { useToast } from "@/components/ui/use-toast";
+     import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+     import { Button } from "@/components/ui/button";
+     import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+     import { Input } from "@/components/ui/input";
+     import { Textarea } from "@/components/ui/textarea";
+     import { Label } from "@/components/ui/label";
+     import { ExternalLink, Github, PlusCircle, Edit, Trash2, RefreshCw } from "lucide-react";
+     import { getAllProjects, deleteProject, createProject, updateProject } from "@/lib/database/admin-queries";
 
-interface ProjectWithTechnologies extends Project {
-  technologies: any[];
-}
+     // Project type definitions
+     interface Project {
+       id?: string;
+       title: string;
+       description: string;
+       image_url: string;
+       project_url: string;
+       github_url: string;
+       is_featured: boolean;
+       sort_order: number;
+       live_url?: string;
+       repo_url?: string;
+       created_at?: string;
+     }
 
-interface ProjectFormProps {
-  project?: ProjectWithTechnologies | null;
-  onSave: () => void;
-  onClose: () => void;
-  projects?: ProjectWithTechnologies[];
-}
+     interface ProjectWithTechnologies extends Project {
+       technologies: any[];
+     }
 
-// Custom hook for projects data
-function useProjects() {
-  const [projects, setProjects] = useState<ProjectWithTechnologies[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+     interface ProjectFormProps {
+       project?: ProjectWithTechnologies | null;
+       onSave: () => void;
+       onClose: () => void;
+       projects?: ProjectWithTechnologies[];
+     }
 
-  async function fetchAll() {
-    setLoading(true);
-    setError(null);
-    try {
-      setProjects(await getAllProjects());
-    } catch (err: any) {
-      setError("Failed to load projects");
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  }
+     // Custom hook for projects data
+     function useProjects() {
+       const [projects, setProjects] = useState<ProjectWithTechnologies[]>([]);
+       const [loading, setLoading] = useState(false);
+       const [error, setError] = useState<string | null>(null);
+       const { toast } = useToast();
 
-  async function remove(id: string) {
-    try {
-      await deleteProject(id);
-      toast({ title: "Project deleted", description: "Project removed successfully." });
-      await fetchAll();
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    }
-  }
+       async function fetchAll() {
+         setLoading(true);
+         setError(null);
+         try {
+           setProjects(await getAllProjects());
+         } catch (err: any) {
+           setError("Failed to load projects");
+           toast({ title: "Error", description: err.message, variant: "destructive" });
+         } finally {
+           setLoading(false);
+         }
+       }
 
-  useEffect(() => {
-    fetchAll();
-  }, []);
+       async function remove(id: string) {
+         try {
+           await deleteProject(id);
+           toast({ title: "Project deleted", description: "Project removed successfully." });
+           await fetchAll();
+         } catch (err: any) {
+           toast({ title: "Error", description: err.message, variant: "destructive" });
+         }
+       }
 
-  return { projects, loading, error, fetchAll, remove };
-}
+       useEffect(() => {
+         fetchAll();
+       }, []);
 
-// Custom hook for project mutations
-function useProjectMutations(onDone: () => void) {
-  const { toast } = useToast();
+       return { projects, loading, error, fetchAll, remove };
+     }
 
-  async function save(id: string | null, data: Partial<Project>, technologyIds: string[] = []) {
-    try {
-      if (id) {
-        await updateProject(id, data, technologyIds);
-        toast({ title: "Project updated", description: `Project '${data.title}' has been updated.` });
-      } else {
-        await createProject(data, technologyIds);
-        toast({ title: "Project created", description: `Project '${data.title}' has been created.` });
-      }
-      onDone();
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    }
-  }
+     // Custom hook for project mutations
+     function useProjectMutations(onDone: () => void) {
+       const { toast } = useToast();
 
-  return { save };
-}
+       async function save(id: string | null, data: Partial<Project>, technologyIds: string[] = []) {
+         try {
+           if (id) {
+             await updateProject(id, data, technologyIds);
+             toast({ title: "Project updated", description: `Project '${data.title}' has been updated.` });
+           } else {
+             await createProject(data, technologyIds);
+             toast({ title: "Project created", description: `Project '${data.title}' has been created.` });
+           }
+           onDone();
+         } catch (err: any) {
+           toast({ title: "Error", description: err.message, variant: "destructive" });
+         }
+       }
 
-// ProjectForm component
-function ProjectForm({ project, onSave, onClose, projects = [] }: ProjectFormProps) {
-  const [title, setTitle] = useState(project?.title || "");
-  const [description, setDescription] = useState(project?.description || "");
-  const [image_url, setImage_url] = useState(project?.image_url || "");
-  const [project_url, setProject_url] = useState(project?.project_url || "");
-  const [github_url, setGithub_url] = useState(project?.github_url || "");
-  const [live_url, setLive_url] = useState(project?.live_url || "");
-  const [repo_url, setRepo_url] = useState(project?.repo_url || "");
-  const [is_featured, setIs_featured] = useState(project?.is_featured || false);
-  const getNextSortOrder = () => {
-    if (project?.sort_order !== undefined) return project.sort_order;
-    if (!projects || projects.length === 0) return 1;
-    return Math.max(...projects.map((p) => p.sort_order || 0)) + 1;
-  };
-  const [sort_order, setSort_order] = useState(getNextSortOrder());
-  const [loading, setLoading] = useState(false);
-  const { save } = useProjectMutations(() => {
-    setLoading(false);
-    onSave();
-    onClose();
-  });
+       return { save };
+     }
 
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        setLoading(true);
-        save(project?.id || null, {
-          title,
-          description,
-          image_url: image_url || null,
-          project_url: project_url || null,
-          github_url: github_url || null,
-          live_url: live_url || null,
-          repo_url: repo_url || null,
-          is_featured,
-          sort_order
-        });
-      }}
-      className="space-y-4"
-    >
-      <div>
-        <Label htmlFor="title">Title</Label>
-        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-      </div>
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} required />
-      </div>
-      <div>
-        <Label htmlFor="image_url">Image URL</Label>
-        <Input id="image_url" value={image_url} onChange={(e) => setImage_url(e.target.value)} />
-      </div>
-      <div>
-        <Label htmlFor="project_url">Live Demo URL</Label>
-        <Input id="project_url" value={project_url} onChange={(e) => setProject_url(e.target.value)} />
-      </div>
-      <div>
-        <Label htmlFor="github_url">GitHub URL</Label>
-        <Input id="github_url" value={github_url} onChange={(e) => setGithub_url(e.target.value)} />
-      </div>
-      <div>
-        <Label htmlFor="live_url">Live URL</Label>
-        <Input id="live_url" value={live_url} onChange={(e) => setLive_url(e.target.value)} />
-      </div>
-      <div>
-        <Label htmlFor="repo_url">Repository URL</Label>
-        <Input id="repo_url" value={repo_url} onChange={(e) => setRepo_url(e.target.value)} />
-      </div>
-      <div className="flex items-center space-x-2">
-        <input id="is_featured" type="checkbox" checked={is_featured} onChange={(e) => setIs_featured(e.target.checked)} />
-        <Label htmlFor="is_featured">Featured Project</Label>
-      </div>
-      <div>
-        <Label htmlFor="sort_order">Sort Order</Label>
-        <Input id="sort_order" type="number" value={sort_order} onChange={(e) => setSort_order(Number(e.target.value))} required />
-      </div>
-      <Button type="submit" disabled={loading}>
-        {loading ? "Saving..." : "Save Project"}
-      </Button>
-    </form>
-  );
-}
+     // ProjectForm component
+     function ProjectForm({ project, onSave, onClose, projects = [] }: ProjectFormProps) {
+       const [title, setTitle] = useState(project?.title || "");
+       const [description, setDescription] = useState(project?.description || "");
+       const [image_url, setImage_url] = useState(project?.image_url || "");
+       const [project_url, setProject_url] = useState(project?.project_url || "");
+       const [github_url, setGithub_url] = useState(project?.github_url || "");
+       const [live_url, setLive_url] = useState(project?.live_url || "");
+       const [repo_url, setRepo_url] = useState(project?.repo_url || "");
+       const [is_featured, setIs_featured] = useState(project?.is_featured || false);
+       const getNextSortOrder = () => {
+         if (project?.sort_order !== undefined) return project.sort_order;
+         if (!projects || projects.length === 0) return 1;
+         return Math.max(...projects.map((p) => p.sort_order || 0)) + 1;
+       };
+       const [sort_order, setSort_order] = useState(getNextSortOrder());
+       const [loading, setLoading] = useState(false);
+       const { save } = useProjectMutations(() => {
+         setLoading(false);
+         onSave();
+         onClose();
+       });
 
-// Main ProjectsTable component
-export function ProjectsTable() {
-  const { projects, loading, error, fetchAll, remove } = useProjects();
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<ProjectWithTechnologies | null>(null);
+       return (
+         <form
+           onSubmit={(e) => {
+             e.preventDefault();
+             setLoading(true);
+             save(project?.id || null, {
+               title,
+               description,
+               image_url: image_url || null,
+               project_url: project_url || null,
+               github_url: github_url || null,
+               live_url: live_url || null,
+               repo_url: repo_url || null,
+               is_featured,
+               sort_order,
+             });
+           }}
+           className="space-y-4"
+         >
+           <div>
+             <Label htmlFor="title">Title</Label>
+             <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required aria-required="true" />
+           </div>
+           <div>
+             <Label htmlFor="description">Description</Label>
+             <Textarea
+               id="description"
+               value={description}
+               onChange={(e) => setDescription(e.target.value)}
+               required
+               aria-required="true"
+             />
+           </div>
+           <div>
+             <Label htmlFor="image_url">Image URL</Label>
+             <Input id="image_url" value={image_url} onChange={(e) => setImage_url(e.target.value)} />
+           </div>
+           <div>
+             <Label htmlFor="project_url">Live Demo URL</Label>
+             <Input id="project_url" value={project_url} onChange={(e) => setProject_url(e.target.value)} />
+           </div>
+           <div>
+             <Label htmlFor="github_url">GitHub URL</Label>
+             <Input id="github_url" value={github_url} onChange={(e) => setGithub_url(e.target.value)} />
+           </div>
+           <div>
+             <Label htmlFor="live_url">Live URL</Label>
+             <Input id="live_url" value={live_url} onChange={(e) => setLive_url(e.target.value)} />
+           </div>
+           <div>
+             <Label htmlFor="repo_url">Repository URL</Label>
+             <Input id="repo_url" value={repo_url} onChange={(e) => setRepo_url(e.target.value)} />
+           </div>
+           <div className="flex items-center space-x-2">
+             <input
+               id="is_featured"
+               type="checkbox"
+               checked={is_featured}
+               onChange={(e) => setIs_featured(e.target.checked)}
+             />
+             <Label htmlFor="is_featured">Featured Project</Label>
+           </div>
+           <div>
+             <Label htmlFor="sort_order">Sort Order</Label>
+             <Input
+               id="sort_order"
+               type="number"
+               value={sort_order}
+               onChange={(e) => setSort_order(Number(e.target.value))}
+               required
+               aria-required="true"
+             />
+           </div>
+           <Button type="submit" disabled={loading} aria-disabled={loading}>
+             {loading ? "Saving..." : "Save Project"}
+           </Button>
+         </form>
+       );
+     }
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-end">
-          <Button disabled>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Add New Project
-          </Button>
-        </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Featured</TableHead>
-                <TableHead>Live Demo</TableHead>
-                <TableHead>GitHub</TableHead>
-                <TableHead>Live URL</TableHead>
-                <TableHead>Repo URL</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[...Array(3)].map((_, i) => (
-                <TableRow key={i}>
-                  {Array(7).fill(0).map((_, j) => (
-                    <TableCell key={j}>
-                      <div className="h-4 bg-muted animate-pulse rounded" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    );
-  }
+     // Main ProjectsTable component
+     export function ProjectsTable() {
+       const { projects, loading, error, fetchAll, remove } = useProjects();
 
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-500">{error}</p>
-        <Button onClick={fetchAll} className="mt-4">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Retry
-        </Button>
-      </div>
-    );
-  }
+       if (loading) {
+         return (
+           <div className="space-y-4">
+             <div className="flex justify-end">
+               <Button disabled aria-disabled="true">
+                 <PlusCircle className="h-4 w-4 mr-2" aria-hidden="true" />
+                 Add New Project
+               </Button>
+             </div>
+             <div className="rounded-md border">
+               <Table>
+                 <TableHeader>
+                   <TableRow>
+                     <TableHead>Title</TableHead>
+                     <TableHead>Featured</TableHead>
+                     <TableHead>Live Demo</TableHead>
+                     <TableHead>GitHub</TableHead>
+                     <TableHead>Live URL</TableHead>
+                     <TableHead>Repo URL</TableHead>
+                     <TableHead>Actions</TableHead>
+                   </TableRow>
+                 </TableHeader>
+                 <TableBody>
+                   {[...Array(3)].map((_, i) => (
+                     <TableRow key={i}>
+                       <TableCell>
+                         <div className="h-4 bg-muted animate-pulse rounded" />
+                       </TableCell>
+                       <TableCell>
+                         <div className="h-4 bg-muted animate-pulse rounded" />
+                       </TableCell>
+                       <TableCell>
+                         <div className="h-4 bg-muted animate-pulse rounded" />
+                       </TableCell>
+                       <TableCell>
+                         <div className="h-4 bg-muted animate-pulse rounded" />
+                       </TableCell>
+                       <TableCell>
+                         <div className="h-4 bg-muted animate-pulse rounded" />
+                       </TableCell>
+                       <TableCell>
+                         <div className="h-4 bg-muted animate-pulse rounded" />
+                       </TableCell>
+                       <TableCell>
+                         <div className="h-4 bg-muted animate-pulse rounded" />
+                       </TableCell>
+                     </TableRow>
+                   ))}
+                 </TableBody>
+               </Table>
+             </div>
+           </div>
+         );
+       }
 
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => { setSelectedProject(null); setIsFormOpen(true); }}>
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Add New Project
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>{selectedProject ? "Edit Project" : "Add New Project"}</DialogTitle>
-            </DialogHeader>
-            <ProjectForm project={selectedProject} onSave={fetchAll} onClose={() => setIsFormOpen(false)} projects={projects} />
-          </DialogContent>
-        </Dialog>
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Featured</TableHead>
-              <TableHead>Live Demo</TableHead>
-              <TableHead>GitHub</TableHead>
-              <TableHead>Live URL</TableHead>
-              <TableHead>Repo URL</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {projects.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                  No projects found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              projects.map((project) => (
-                <TableRow key={project.id}>
-                  <TableCell className="font-medium">{project.title}</TableCell>
-                  <TableCell>{project.is_featured ? "Yes" : "No"}</TableCell>
-                  <TableCell>
-                    {project.project_url ? (
-                      <a href={project.project_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    ) : "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    {project.github_url ? (
-                      <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                        <Github className="h-4 w-4" />
-                      </a>
-                    ) : "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    {project.live_url ? (
-                      <a href={project.live_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    ) : "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    {project.repo_url ? (
-                      <a href={project.repo_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                        <Github className="h-4 w-4" />
-                      </a>
-                    ) : "N/A"}
-                  </TableCell>
-                  <TableCell className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => { setSelectedProject(project); setIsFormOpen(true); }}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => remove(project.id!)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-  );
-}
+       if (error) {
+         return (
+           <div className="text-center py-8" aria-live="polite">
+             <p className="text-red-500">{error}</p>
+             <Button onClick={fetchAll} className="mt-4" aria-label="Retry loading projects">
+               <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
+               Retry
+             </Button>
+           </div>
+         );
+       }
+
+       return (
+         <div className="space-y-4">
+           <div className="flex justify-end">
+             <Dialog>
+               <DialogTrigger asChild>
+                 <Button aria-label="Add new project">
+                   <PlusCircle className="h-4 w-4 mr-2" aria-hidden="true" />
+                   Add New Project
+                 </Button>
+               </DialogTrigger>
+               <DialogContent className="sm:max-w-[600px]">
+                 <DialogHeader>
+                   <DialogTitle>Add New Project</DialogTitle>
+                 </DialogHeader>
+                 <ProjectForm
+                   project={null}
+                   onSave={fetchAll}
+                   onClose={() => {}}
+                   projects={projects}
+                 />
+               </DialogContent>
+             </Dialog>
+           </div>
+           <div className="rounded-md border">
+             <Table>
+               <TableHeader>
+                 <TableRow>
+                   <TableHead>Title</TableHead>
+                   <TableHead>Featured</TableHead>
+                   <TableHead>Live Demo</TableHead>
+                   <TableHead>GitHub</TableHead>
+                   <TableHead>Live URL</TableHead>
+                   <TableHead>Repo URL</TableHead>
+                   <TableHead>Actions</TableHead>
+                 </TableRow>
+               </TableHeader>
+               <TableBody>
+                 {projects.length === 0 ? (
+                   <TableRow>
+                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                       No projects found.
+                     </TableCell>
+                   </TableRow>
+                 ) : (
+                   projects.map((project) => (
+                     <TableRow key={project.id}>
+                       <TableCell className="font-medium">{project.title}</TableCell>
+                       <TableCell>{project.is_featured ? "Yes" : "No"}</TableCell>
+                       <TableCell>
+                         {project.project_url ? (
+                           <a
+                             href={project.project_url}
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="text-blue-500 hover:underline"
+                             aria-label={`View live demo for ${project.title}`}
+                           >
+                             <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                           </a>
+                         ) : "N/A"}
+                       </TableCell>
+                       <TableCell>
+                         {project.github_url ? (
+                           <a
+                             href={project.github_url}
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="text-blue-500 hover:underline"
+                             aria-label={`View GitHub for ${project.title}`}
+                           >
+                             <Github className="h-4 w-4" aria-hidden="true" />
+                           </a>
+                         ) : "N/A"}
+                       </TableCell>
+                       <TableCell>
+                         {project.live_url ? (
+                           <a
+                             href={project.live_url}
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="text-blue-500 hover:underline"
+                             aria-label={`View live URL for ${project.title}`}
+                           >
+                             <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                           </a>
+                         ) : "N/A"}
+                       </TableCell>
+                       <TableCell>
+                         {project.repo_url ? (
+                           <a
+                             href={project.repo_url}
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="text-blue-500 hover:underline"
+                             aria-label={`View repository for ${project.title}`}
+                           >
+                             <Github className="h-4 w-4" aria-hidden="true" />
+                           </a>
+                         ) : "N/A"}
+                       </TableCell>
+                       <TableCell className="flex gap-2">
+                         <Dialog>
+                           <DialogTrigger asChild>
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               aria-label={`Edit project ${project.title}`}
+                             >
+                               <Edit className="h-4 w-4" aria-hidden="true" />
+                             </Button>
+                           </DialogTrigger>
+                           <DialogContent className="sm:max-w-[600px]">
+                             <DialogHeader>
+                               <DialogTitle>Edit Project</DialogTitle>
+                             </DialogHeader>
+                             <ProjectForm
+                               project={project}
+                               onSave={fetchAll}
+                               onClose={() => {}}
+                               projects={projects}
+                             />
+                           </DialogContent>
+                         </Dialog>
+                         <Button
+                           variant="destructive"
+                           size="sm"
+                           onClick={() => remove(project.id!)}
+                           aria-label={`Delete project ${project.title}`}
+                         >
+                           <Trash2 className="h-4 w-4" aria-hidden="true" />
+                         </Button>
+                       </TableCell>
+                     </TableRow>
+                   ))
+                 )}
+               </TableBody>
+             </Table>
+           </div>
+         </div>
+       );
+     }
