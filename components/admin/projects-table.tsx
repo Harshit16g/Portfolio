@@ -2,19 +2,38 @@
 
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { useToast } from "@/components/ui/use-toast";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { DialogHeader, DialogTitle } from "@/components/ui/dialog"; // add if you have DialogHeader/DialogTitle in dialog
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { ExternalLink, Github, PlusCircle, Edit, Trash2 } from "lucide-react";
-import { getAllProjects, deleteProject, createProject, updateProject } from "@/lib/database/admin-queries";
+import {
+  ExternalLink,
+  Github,
+  PlusCircle,
+  Edit,
+  Trash2,
+  RefreshCw
+} from "lucide-react";
+import {
+  getAllProjects,
+  deleteProject,
+  createProject,
+  updateProject
+} from "@/lib/database/admin-queries";
 
 // Project type definitions
 interface Project {
@@ -138,24 +157,18 @@ function ProjectForm({ project, onSave, onClose, projects = [] }: ProjectFormPro
           live_url: live_url || null,
           repo_url: repo_url || null,
           is_featured,
-          sort_order,
+          sort_order
         });
       }}
       className="space-y-4"
     >
       <div>
         <Label htmlFor="title">Title</Label>
-        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required aria-required="true" />
+        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
       </div>
       <div>
         <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-          aria-required="true"
-        />
+        <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} required />
       </div>
       <div>
         <Label htmlFor="image_url">Image URL</Label>
@@ -178,26 +191,14 @@ function ProjectForm({ project, onSave, onClose, projects = [] }: ProjectFormPro
         <Input id="repo_url" value={repo_url} onChange={(e) => setRepo_url(e.target.value)} />
       </div>
       <div className="flex items-center space-x-2">
-        <input
-          id="is_featured"
-          type="checkbox"
-          checked={is_featured}
-          onChange={(e) => setIs_featured(e.target.checked)}
-        />
+        <input id="is_featured" type="checkbox" checked={is_featured} onChange={(e) => setIs_featured(e.target.checked)} />
         <Label htmlFor="is_featured">Featured Project</Label>
       </div>
       <div>
         <Label htmlFor="sort_order">Sort Order</Label>
-        <Input
-          id="sort_order"
-          type="number"
-          value={sort_order}
-          onChange={(e) => setSort_order(Number(e.target.value))}
-          required
-          aria-required="true"
-        />
+        <Input id="sort_order" type="number" value={sort_order} onChange={(e) => setSort_order(Number(e.target.value))} required />
       </div>
-      <Button type="submit" disabled={loading} aria-disabled={loading}>
+      <Button type="submit" disabled={loading}>
         {loading ? "Saving..." : "Save Project"}
       </Button>
     </form>
@@ -214,8 +215,8 @@ export function ProjectsTable() {
     return (
       <div className="space-y-4">
         <div className="flex justify-end">
-          <Button disabled aria-disabled="true">
-            <PlusCircle className="h-4 w-4 mr-2" aria-hidden="true" />
+          <Button disabled>
+            <PlusCircle className="h-4 w-4 mr-2" />
             Add New Project
           </Button>
         </div>
@@ -235,27 +236,11 @@ export function ProjectsTable() {
             <TableBody>
               {[...Array(3)].map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell>
-                    <div className="h-4 bg-muted animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="h-4 bg-muted animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="h-4 bg-muted animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="h-4 bg-muted animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="h-4 bg-muted animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="h-4 bg-muted animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="h-4 bg-muted animate-pulse rounded" />
-                  </TableCell>
+                  {Array(7).fill(0).map((_, j) => (
+                    <TableCell key={j}>
+                      <div className="h-4 bg-muted animate-pulse rounded" />
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))}
             </TableBody>
@@ -267,10 +252,10 @@ export function ProjectsTable() {
 
   if (error) {
     return (
-      <div className="text-center py-8" aria-live="polite">
+      <div className="text-center py-8">
         <p className="text-red-500">{error}</p>
-        <Button onClick={fetchAll} className="mt-4" aria-label="Retry loading projects">
-          <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
+        <Button onClick={fetchAll} className="mt-4">
+          <RefreshCw className="h-4 w-4 mr-2" />
           Retry
         </Button>
       </div>
@@ -282,8 +267,8 @@ export function ProjectsTable() {
       <div className="flex justify-end">
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { setSelectedProject(null); setIsFormOpen(true); }} aria-label="Add new project">
-              <PlusCircle className="h-4 w-4 mr-2" aria-hidden="true" />
+            <Button onClick={() => { setSelectedProject(null); setIsFormOpen(true); }}>
+              <PlusCircle className="h-4 w-4 mr-2" />
               Add New Project
             </Button>
           </DialogTrigger>
@@ -291,12 +276,7 @@ export function ProjectsTable() {
             <DialogHeader>
               <DialogTitle>{selectedProject ? "Edit Project" : "Add New Project"}</DialogTitle>
             </DialogHeader>
-            <ProjectForm
-              project={selectedProject}
-              onSave={fetchAll}
-              onClose={() => setIsFormOpen(false)}
-              projects={projects}
-            />
+            <ProjectForm project={selectedProject} onSave={fetchAll} onClose={() => setIsFormOpen(false)} projects={projects} />
           </DialogContent>
         </Dialog>
       </div>
@@ -327,72 +307,38 @@ export function ProjectsTable() {
                   <TableCell>{project.is_featured ? "Yes" : "No"}</TableCell>
                   <TableCell>
                     {project.project_url ? (
-                      <a
-                        href={project.project_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
-                        aria-label={`View live demo for ${project.title}`}
-                      >
-                        <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                      <a href={project.project_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                        <ExternalLink className="h-4 w-4" />
                       </a>
                     ) : "N/A"}
                   </TableCell>
                   <TableCell>
                     {project.github_url ? (
-                      <a
-                        href={project.github_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
-                        aria-label={`View GitHub for ${project.title}`}
-                      >
-                        <Github className="h-4 w-4" aria-hidden="true" />
+                      <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                        <Github className="h-4 w-4" />
                       </a>
                     ) : "N/A"}
                   </TableCell>
                   <TableCell>
                     {project.live_url ? (
-                      <a
-                        href={project.live_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
-                        aria-label={`View live URL for ${project.title}`}
-                      >
-                        <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                      <a href={project.live_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                        <ExternalLink className="h-4 w-4" />
                       </a>
                     ) : "N/A"}
                   </TableCell>
                   <TableCell>
                     {project.repo_url ? (
-                      <a
-                        href={project.repo_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
-                        aria-label={`View repository for ${project.title}`}
-                      >
-                        <Github className="h-4 w-4" aria-hidden="true" />
+                      <a href={project.repo_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                        <Github className="h-4 w-4" />
                       </a>
                     ) : "N/A"}
                   </TableCell>
                   <TableCell className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => { setSelectedProject(project); setIsFormOpen(true); }}
-                      aria-label={`Edit project ${project.title}`}
-                    >
-                      <Edit className="h-4 w-4" aria-hidden="true" />
+                    <Button variant="outline" size="sm" onClick={() => { setSelectedProject(project); setIsFormOpen(true); }}>
+                      <Edit className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => remove(project.id!)}
-                      aria-label={`Delete project ${project.title}`}
-                    >
-                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    <Button variant="destructive" size="sm" onClick={() => remove(project.id!)}>
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
