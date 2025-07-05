@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/types";
 
@@ -32,6 +31,10 @@ export interface FunFactsByCategory {
 export interface TechnologiesByCategory {
   category: string;
   technologies: Technology[];
+}
+
+export interface FeedbackWithSenderInfo extends Feedback {
+  connections: { name: string; email: string; subject: string; status: "read" | "unread" | "replied" } | null;
 }
 
 const MAX_RETRIES = 3;
@@ -188,6 +191,78 @@ export async function getAllProjects(): Promise<ProjectWithTechnologies[]> {
     );
 
     return projectsWithTech;
+  });
+}
+
+export async function createProject(projectData: Omit<Project, "id" | "created_at">, technologyIds: string[]): Promise<Project | null> {
+  return withRetry(async () => {
+    const { data, error } = await supabase.from("projects").insert([projectData]).select().single();
+    if (error) {
+      throw new Error(`Error creating project: ${error.message}`);
+    }
+    if (data && technologyIds.length > 0) {
+      const projectTechnologies = technologyIds.map((techId) => ({ project_id: data.id, technology_id: techId }));
+      const { error: techError } = await supabase.from("project_technologies").insert(projectTechnologies);
+      if (techError) {
+        await supabase.from("projects").delete().eq("id", data.id); // Rollback
+        throw new Error(`Error linking technologies to project: ${techError.message}`);
+      }
+    }
+    return data;
+  });
+}
+
+export async function updateProject(id: string, projectData: Partial<Omit<Project, "id" | "created_at">>, technologyIds?: string[]): Promise<Project | null> {
+  return withRetry(async () => {
+    const { data, error } = await supabase.from("projects").update(projectData).eq("id", id).select().single();
+    if (error) {
+      throw new Error(`Error updating project: ${error.message}`);
+    }
+    if (data && technologyIds !== undefined) {
+      const { error: deleteError } = await supabase.from("project_technologies").delete().eq("project_id", id);
+      if (deleteError) {
+        throw new Error(`Error deleting old technologies for project: ${deleteError.message}`);
+      }
+      if (technologyIds.length > 0) {
+        const projectTechnologies = technologyIds.map((techId) => ({ project_id: id, technology_id: techId }));
+        const { error: insertError } = await supabase.from("project_technologies").insert(projectTechnologies);
+        if (insertError) {
+          throw new Error(`Error inserting new technologies for project: ${insertError.message}`);
+        }
+      }
+    }
+    return data;
+  });
+}
+
+export async function deleteProject(id: string): Promise<boolean> {
+  return withRetry(async () => {
+    const { error: techError } = await supabase.from("project_technologies").delete().eq("project_id", id);
+    if (techError) {
+      throw new Error(`Error deleting project technologies: ${techError.message}`);
+    }
+    const { error } = await supabase.from("projects").delete().eq("id", id);
+    if (error) {
+      throw new Error(`Error deleting project: ${error.message}`);
+    }
+    return true;
+  });
+}
+
+export async function getProjectById(id: string): Promise<Project | null> {
+  return withRetry(async () => {
+    const { data: project, error: projectError } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (projectError) {
+      if (projectError.code === "PGRST116") {
+        return null;
+      }
+      throw new Error(`Error fetching project by ID: ${projectError.message}`);
+    }
+    return project as Project;
   });
 }
 
@@ -390,6 +465,19 @@ export async function getFeedback(): Promise<Feedback[]> {
   });
 }
 
+export async function getFeedbackWithSenderInfo(): Promise<FeedbackWithSenderInfo[]> {
+  return withRetry(async () => {
+    const { data, error } = await supabase
+      .from("feedback")
+      .select("*, connections(name, email, subject, status)")
+      .order("created_at", { ascending: false });
+    if (error) {
+      throw new Error(`Error fetching feedback with sender info: ${error.message}`);
+    }
+    return data as FeedbackWithSenderInfo[];
+  });
+}
+
 export async function updateConnectionStatus(id: string, status: string): Promise<boolean> {
   return withRetry(async () => {
     const { error } = await supabase
@@ -441,6 +529,39 @@ export async function deleteReview(id: string): Promise<boolean> {
       return false;
     }
 
+    return true;
+  });
+}
+
+export async function updateFeedbackStatus(id: string, status: "read" | "unread" | "replied"): Promise<boolean> {
+  return withRetry(async () => {
+    const { error } = await supabase.from("feedback").update({ status }).eq("id", id);
+    if (error) {
+      throw new Error(`Error updating feedback status: ${error.message}`);
+    }
+    return true;
+  });
+}
+
+export async function deleteFeedback(id: string): Promise<boolean> {
+  return withRetry(async () => {
+    const { error } = await supabase.from("feedback").delete().eq("id", id);
+    if (error) {
+      throw new Error(`Error deleting feedback: ${error.message}`);
+    }
+    return true;
+  });
+}
+
+export async function replyToFeedback(feedbackId: string, replyMessage: string): Promise<boolean> {
+  return withRetry(async () => {
+    const { error } = await supabase
+      .from("feedback")
+      .update({ reply_message: replyMessage, status: "replied" })
+      .eq("id", feedbackId);
+    if (error) {
+      throw new Error(`Error replying to feedback: ${error.message}`);
+    }
     return true;
   });
 }
