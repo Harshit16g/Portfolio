@@ -1,0 +1,211 @@
+Portfolio Repository Directory Tree - Admin Dashboard Enhancement Branch
+================================================================================
+
+Portfolio/
+├── .github/
+│   └── ISSUE_TEMPLATE/
+│       ├── bug_report.md
+│       └── feature_request.md
+├── .gitignore
+├── README.md
+├── DIRECTORY_TREE.md
+├── DIRECTORY_TREE.txt
+│
+├── app/                              [Next.js App Router]
+│   ├── about/
+│   │   └── page.tsx
+│   ├── admin/                        [ADMIN DASHBOARD ROUTES]
+│   │   └── page.tsx
+│   ├── blog/
+│   │   └── page.tsx
+│   ├── certifications/
+│   │   └── page.tsx
+│   ├── contact/
+│   │   └── page.tsx
+│   ├── education/
+│   │   └── page.tsx
+│   ├── experience/
+│   │   ├── data.tsx
+│   │   └── page.tsx
+│   ├── projects/
+│   │   └── page.tsx
+│   ├── stats/
+│   │   └── page.tsx
+│   ├── testimonials/
+│   │   └── page.tsx
+│   ├── toolbox/
+│   │   └── page.tsx
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+│
+├── components/                       [React Components]
+│   ├── about/
+│   │   ├── fun-facts-section.tsx
+│   │   ├── profile-card.tsx
+│   │   └── timeline-section.tsx
+│   ├── admin/                        [ADMIN DASHBOARD COMPONENTS]
+│   │   ├── admin-dashboard.tsx
+│   │   ├── admin-login.tsx
+│   │   ├── admin-route-guard.tsx
+│   │   ├── connections-table.tsx
+│   │   ├── feedback-table.tsx
+│   │   └── reviews-table.tsx
+│   ├── blog/
+│   │   └── blog-grid.tsx
+│   ├── certifications/
+│   │   └── certifications-grid.tsx
+│   ├── contact/
+│   │   ├── contact-form.tsx
+│   │   └── contact-info.tsx
+│   ├── education/
+│   │   └── education-timeline.tsx
+│   ├── experience/
+│   │   └── experience-timeline.tsx
+│   ├── projects/
+│   │   └── projects-grid.tsx
+│   ├── seo/
+│   │   └── structured-data.tsx
+│   ├── stats/
+│   │   └── stats-overview.tsx
+│   ├── testimonials/
+│   │   └── testimonials-grid.tsx
+│   ├── toolbox/
+│   │   └── toolbox-grid.tsx
+│   ├── ui/                           [ShadCN/UI Components]
+│   │   ├── accordion.tsx
+│   │   ├── alert-dialog.tsx
+│   │   ├── alert.tsx
+│   │   ├── aspect-ratio.tsx
+│   │   ├── avatar.tsx
+│   │   ├── badge.tsx
+│   │   ├── breadcrumb.tsx
+│   │   ├── button.tsx
+│   │   ├── calendar.tsx
+│   │   ├── card-grid.tsx
+│   │   ├── card.tsx
+│   │   ├── carousel.tsx
+│   │   ├── chart.tsx
+│   │   ├── checkbox.tsx
+│   │   ├── collapsible.tsx
+│   │   ├── command-palette.tsx
+│   │   ├── command.tsx
+│   │   ├── context-menu.tsx
+│   │   ├── dialog.tsx
+│   │   ├── drawer.tsx
+│   │   ├── dropdown-menu.tsx
+│   │   ├── error-boundary.tsx
+│   │   ├── error-message.tsx
+│   │   ├── form.tsx
+│   │   ├── hover-card.tsx
+│   │   ├── input-otp.tsx
+│   │   ├── input.tsx
+│   │   ├── label.tsx
+│   │   ├── live-feedback-widget.tsx
+│   │   ├── loading-card.tsx
+│   │   ├── loading-skeleton.tsx
+│   │   ├── menubar.tsx
+│   │   ├── navigation-menu.tsx
+│   │   ├── optimized-image.tsx
+│   │   ├── page-transition.tsx
+│   │   ├── pagination.tsx
+│   │   ├── popover.tsx
+│   │   ├── progress.tsx
+│   │   ├── radio-group.tsx
+│   │   ├── resizable.tsx
+│   │   ├── scroll-area.tsx
+│   │   ├── section-heading.tsx
+│   │   ├── select.tsx
+│   │   ├── separator.tsx
+│   │   ├── sheet.tsx
+│   │   ├── sidebar.tsx
+│   │   ├── skeleton.tsx
+│   │   ├── skip-link.tsx
+│   │   ├── slider.tsx
+│   │   ├── sonner.tsx
+│   │   ├── switch.tsx
+│   │   ├── table.tsx
+│   │   ├── tabs.tsx
+│   │   ├── textarea.tsx
+│   │   ├── toast.tsx
+│   │   ├── toaster.tsx
+│   │   ├── toggle-group.tsx
+│   │   ├── toggle.tsx
+│   │   ├── tooltip.tsx
+│   │   ├── use-mobile.tsx
+│   │   └── use-toast.ts
+│   ├── featured-projects.tsx
+│   ├── hero-section.tsx
+│   ├── mode-toggle.tsx
+│   ├── portfolio-layout.tsx
+│   ├── skip-link.tsx
+│   ├── tech-stack.tsx
+│   ├── theme-provider.tsx
+│   └── typing-effect.tsx
+│
+├── hooks/                            [Custom React Hooks]
+│   ├── use-about-data.ts
+│   ├── use-mobile.tsx
+│   ├── use-portfolio-data.ts
+│   ├── use-rate-limit.ts             [ADMIN RATE LIMITING]
+│   └── use-toast.ts
+│
+├── lib/                              [Utilities & Config]
+│   ├── auth/                         [ADMIN AUTHENTICATION]
+│   │   └── admin-auth.tsx
+│   ├── config/                       [ADMIN CONFIGURATION]
+│   │   └── admin-config.ts
+│   ├── database/
+│   │   └── queries.ts
+│   ├── rate-limit/                   [RATE LIMITING SYSTEM]
+│   │   └── rate-limiter.ts
+│   ├── supabase/
+│   │   ├── client.ts
+│   │   ├── server.ts
+│   │   └── types.ts
+│   ├── icons.tsx
+│   └── utils.ts
+│
+├── public/                           [Static Assets]
+│   ├── placeholder-logo.png
+│   ├── placeholder-logo.svg
+│   ├── placeholder-user.jpg
+│   ├── placeholder.jpg
+│   └── placeholder.svg
+│
+├── styles/
+│   └── globals.css
+│
+├── components.json                   [ShadCN/UI Config]
+├── next.config.mjs                   [Next.js Config]
+├── package.json                      [Dependencies]
+├── pnpm-lock.yaml                    [Lock File]
+├── postcss.config.mjs                [PostCSS Config]
+├── tailwind.config.ts                [Tailwind Config]
+└── tsconfig.json                     [TypeScript Config]
+
+================================================================================
+ADMIN DASHBOARD ENHANCEMENT SUMMARY:
+================================================================================
+
+Authentication & Security:
+- lib/auth/admin-auth.tsx
+- components/admin/admin-login.tsx  
+- components/admin/admin-route-guard.tsx
+- lib/rate-limit/rate-limiter.ts
+- hooks/use-rate-limit.ts
+
+Dashboard Interface:
+- app/admin/page.tsx
+- components/admin/admin-dashboard.tsx
+- lib/config/admin-config.ts
+
+Data Management:
+- components/admin/connections-table.tsx
+- components/admin/feedback-table.tsx  
+- components/admin/reviews-table.tsx
+
+Total Files: 135+
+Total Directories: 38+
+Admin-Specific Components: 6
+UI Components: 50+

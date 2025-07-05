@@ -1,0 +1,180 @@
+{
+  "repository": "Portfolio",
+  "branch": "admin-dashboard-enhancement",
+  "owner": "Harshit16g",
+  "description": "Full-Stack Developer Portfolio with Admin Dashboard Enhancement",
+  "total_files": 127,
+  "total_directories": 38,
+  "structure": {
+    "root": {
+      "config_files": [
+        ".gitignore",
+        "README.md", 
+        "DIRECTORY_TREE.md",
+        "DIRECTORY_TREE.txt",
+        "components.json",
+        "next.config.mjs",
+        "package.json",
+        "pnpm-lock.yaml",
+        "postcss.config.mjs",
+        "tailwind.config.ts",
+        "tsconfig.json"
+      ],
+      "directories": {
+        ".github": {
+          "description": "GitHub configuration and templates",
+          "subdirectories": {
+            "ISSUE_TEMPLATE": {
+              "files": ["bug_report.md", "feature_request.md"]
+            }
+          }
+        },
+        "app": {
+          "description": "Next.js App Router directory",
+          "total_pages": 11,
+          "admin_features": ["admin/page.tsx"],
+          "subdirectories": {
+            "about": ["page.tsx"],
+            "admin": ["page.tsx"],
+            "blog": ["page.tsx"],
+            "certifications": ["page.tsx"],
+            "contact": ["page.tsx"],
+            "education": ["page.tsx"],
+            "experience": ["data.tsx", "page.tsx"],
+            "projects": ["page.tsx"],
+            "stats": ["page.tsx"],
+            "testimonials": ["page.tsx"],
+            "toolbox": ["page.tsx"]
+          },
+          "root_files": ["globals.css", "layout.tsx", "page.tsx"]
+        },
+        "components": {
+          "description": "React components directory",
+          "admin_components": [
+            "admin/admin-dashboard.tsx",
+            "admin/admin-login.tsx", 
+            "admin/admin-route-guard.tsx",
+            "admin/connections-table.tsx",
+            "admin/feedback-table.tsx",
+            "admin/reviews-table.tsx"
+          ],
+          "subdirectories": {
+            "about": 3,
+            "admin": 6,
+            "blog": 1,
+            "certifications": 1,
+            "contact": 2,
+            "education": 1,
+            "experience": 1,
+            "projects": 1,
+            "seo": 1,
+            "stats": 1,
+            "testimonials": 1,
+            "toolbox": 1,
+            "ui": 50
+          }
+        },
+        "hooks": {
+          "description": "Custom React hooks",
+          "admin_hooks": ["use-rate-limit.ts"],
+          "files": [
+            "use-about-data.ts",
+            "use-mobile.tsx",
+            "use-portfolio-data.ts", 
+            "use-rate-limit.ts",
+            "use-toast.ts"
+          ]
+        },
+        "lib": {
+          "description": "Utility libraries and configurations",
+          "admin_features": [
+            "auth/admin-auth.tsx",
+            "config/admin-config.ts",
+            "rate-limit/rate-limiter.ts"
+          ],
+          "subdirectories": {
+            "auth": ["admin-auth.tsx"],
+            "config": ["admin-config.ts"],
+            "database": ["queries.ts"],
+            "rate-limit": ["rate-limiter.ts"],
+            "supabase": ["client.ts", "server.ts", "types.ts"]
+          },
+          "root_files": ["icons.tsx", "utils.ts"]
+        },
+        "public": {
+          "description": "Static assets",
+          "files": [
+            "placeholder-logo.png",
+            "placeholder-logo.svg", 
+            "placeholder-user.jpg",
+            "placeholder.jpg",
+            "placeholder.svg"
+          ]
+        },
+        "styles": {
+          "description": "Styling files",
+          "files": ["globals.css"]
+        }
+      }
+    }
+  },
+  "admin_dashboard_features": {
+    "authentication": {
+      "files": [
+        "lib/auth/admin-auth.tsx",
+        "components/admin/admin-login.tsx",
+        "components/admin/admin-route-guard.tsx"
+      ],
+      "features": [
+        "Session management",
+        "Route protection", 
+        "Secure login interface"
+      ]
+    },
+    "security": {
+      "files": [
+        "lib/rate-limit/rate-limiter.ts",
+        "hooks/use-rate-limit.ts",
+        "lib/config/admin-config.ts"
+      ],
+      "features": [
+        "Rate limiting",
+        "Configuration management",
+        "Security policies"
+      ]
+    },
+    "dashboard": {
+      "files": [
+        "app/admin/page.tsx",
+        "components/admin/admin-dashboard.tsx"
+      ],
+      "features": [
+        "Tabbed interface",
+        "Real-time updates",
+        "Responsive design"
+      ]
+    },
+    "data_management": {
+      "files": [
+        "components/admin/connections-table.tsx",
+        "components/admin/feedback-table.tsx",
+        "components/admin/reviews-table.tsx"
+      ],
+      "features": [
+        "Connection management",
+        "Feedback handling",
+        "Review approval system"
+      ]
+    }
+  },
+  "tech_stack": {
+    "frontend": ["Next.js", "React", "TypeScript"],
+    "styling": ["Tailwind CSS", "ShadCN/UI"],
+    "database": ["Supabase", "PostgreSQL"],
+    "authentication": ["Custom admin auth"],
+    "package_manager": "pnpm",
+    "deployment": "Vercel"
+  },
+  "generated_at": "2025-01-05",
+  "generated_by": "GitHub Coding AI Agent"
+}
