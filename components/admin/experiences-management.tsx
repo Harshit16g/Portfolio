@@ -228,6 +228,8 @@ export function ExperiencesManagement() {
             className="max-w-sm"
           />
         </div>
+        {/* Create/Edit dialogs temporarily hidden until CRUD API is implemented */}
+        {false && (
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -342,6 +344,7 @@ export function ExperiencesManagement() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       <div className="rounded-md border">
@@ -418,6 +421,8 @@ export function ExperiencesManagement() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
+                        {/* Edit button temporarily hidden until CRUD API is implemented */}
+                        {false && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -425,6 +430,7 @@ export function ExperiencesManagement() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
+                        )}
                       </div>
                     </TableCell>
                   </motion.tr>
@@ -435,7 +441,8 @@ export function ExperiencesManagement() {
         </Table>
       </div>
 
-      {/* Edit Dialog */}
+      {/* Edit Dialog - temporarily hidden until CRUD API is implemented */}
+      {false && (
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -540,6 +547,7 @@ export function ExperiencesManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      )}
     </motion.div>
   )
 }

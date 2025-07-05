@@ -194,6 +194,8 @@ export function ProjectsManagement() {
             className="max-w-sm"
           />
         </div>
+        {/* Create/Edit dialogs temporarily hidden until CRUD API is implemented */}
+        {false && (
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -263,6 +265,7 @@ export function ProjectsManagement() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       <div className="rounded-md border">
@@ -367,6 +370,8 @@ export function ProjectsManagement() {
                             </a>
                           </Button>
                         )}
+                        {/* Edit button temporarily hidden until CRUD API is implemented */}
+                        {false && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -374,6 +379,7 @@ export function ProjectsManagement() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
+                        )}
                       </div>
                     </TableCell>
                   </motion.tr>
@@ -384,7 +390,8 @@ export function ProjectsManagement() {
         </Table>
       </div>
 
-      {/* Edit Dialog */}
+      {/* Edit Dialog - temporarily hidden until CRUD API is implemented */}
+      {false && (
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -464,6 +471,7 @@ export function ProjectsManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      )}
     </motion.div>
   )
 }
