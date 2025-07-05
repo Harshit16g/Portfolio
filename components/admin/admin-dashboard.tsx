@@ -13,12 +13,18 @@ import { AdminLogin } from "./admin-login";
 import { useAdminAuth, AdminAuthProvider } from "@/lib/auth/admin-auth";
 import { MessageSquare, Star, MessageCircle, BarChart3, LogOut, Shield, Activity, Clock, User } from "lucide-react";
 
+// Placeholder for ConnectionsTable and ReviewsTable if not implemented
+const PlaceholderTable = ({ title }: { title: string }) => (
+  <div className="text-center py-8 text-muted-foreground">
+    {title} coming soon...
+  </div>
+);
+
 function AdminDashboardContent() {
   const [activeTab, setActiveTab] = useState("connections");
   const [sessionTime, setSessionTime] = useState("");
   const { isAuthenticated, logout, loading } = useAdminAuth();
 
-  // Update session time display
   useEffect(() => {
     if (isAuthenticated) {
       const updateSessionTime = () => {
@@ -168,9 +174,7 @@ function AdminDashboardContent() {
               <CardDescription>View an overview of your portfolio metrics and performance.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                Stats dashboard coming soon...
-              </div>
+              <PlaceholderTable title="Stats dashboard" />
             </CardContent>
           </Card>
         </TabsContent>
