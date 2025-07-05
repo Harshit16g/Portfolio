@@ -13,17 +13,25 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useProjects } from "@/hooks/use-portfolio-data";
-import { deleteProject } from "@/lib/database/admin-queries";
-import { Eye, Trash2, Search, RefreshCw } from "lucide-react";
+import { createProject, updateProject, deleteProject } from "@/lib/database/admin-queries";
+import { Eye, Trash2, Search, RefreshCw, Plus, Edit } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 type Project = {
   id: string;
   title: string;
   description: string;
+  image_url: string;
+  project_url: string;
+  github_url: string;
   is_featured: boolean;
+  sort_order: number;
+  live_url?: string;
+  repo_url?: string;
   created_at: string;
   technologies: { id: string; name: string }[];
 };
@@ -33,6 +41,20 @@ export function ProjectsTable() {
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [newProject, setNewProject] = useState<Omit<Project, "id" | "created_at" | "technologies">>({
+    title: "",
+    description: "",
+    image_url: "",
+    project_url: "",
+    github_url: "",
+    is_featured: false,
+    sort_order: 0,
+    live_url: "",
+    repo_url: "",
+  });
+  const [editProject, setEditProject] = useState<Partial<Omit<Project, "id" | "created_at" | "technologies">>>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -65,6 +87,71 @@ export function ProjectsTable() {
       toast({
         title: "Error",
         description: "Failed to delete project.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreate = async () => {
+    try {
+      const projectData = { ...newProject, technologies: [] }; // Add tech selection if needed
+      const success = await createProject(projectData, []);
+      if (success) {
+        toast({
+          title: "Project created",
+          description: "The project has been successfully created.",
+        });
+        refetch();
+        setIsCreateOpen(false);
+        setNewProject({
+          title: "",
+          description: "",
+          image_url: "",
+          project_url: "",
+          github_url: "",
+          is_featured: false,
+          sort_order: 0,
+          live_url: "",
+          repo_url: "",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to create project.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create project.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEdit = async (id: string) => {
+    try {
+      const success = await updateProject(id, editProject, []);
+      if (success) {
+        toast({
+          title: "Project updated",
+          description: "The project has been successfully updated.",
+        });
+        refetch();
+        setIsEditOpen(false);
+        setEditProject({});
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update project.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update project.",
         variant: "destructive",
       });
     }
@@ -133,14 +220,100 @@ export function ProjectsTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <Search className="h-4 w-4" />
-        <Input
-          placeholder="Search projects..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Search className="h-4 w-4" />
+          <Input
+            placeholder="Search projects..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-sm"
+          />
+        </div>
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Project
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Create New Project</DialogTitle>
+              <DialogDescription>Fill in the details to create a new project.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="font-semibold">Title:</label>
+                <Input
+                  value={newProject.title}
+                  onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="font-semibold">Description:</label>
+                <Textarea
+                  value={newProject.description}
+                  onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="font-semibold">Image URL:</label>
+                <Input
+                  value={newProject.image_url}
+                  onChange={(e) => setNewProject({ ...newProject, image_url: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="font-semibold">Project URL:</label>
+                <Input
+                  value={newProject.project_url}
+                  onChange={(e) => setNewProject({ ...newProject, project_url: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="font-semibold">GitHub URL:</label>
+                <Input
+                  value={newProject.github_url}
+                  onChange={(e) => setNewProject({ ...newProject, github_url: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="font-semibold">Live URL:</label>
+                <Input
+                  value={newProject.live_url || ""}
+                  onChange={(e) => setNewProject({ ...newProject, live_url: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="font-semibold">Repo URL:</label>
+                <Input
+                  value={newProject.repo_url || ""}
+                  onChange={(e) => setNewProject({ ...newProject, repo_url: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="font-semibold">Sort Order:</label>
+                <Input
+                  type="number"
+                  value={newProject.sort_order}
+                  onChange={(e) => setNewProject({ ...newProject, sort_order: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <label className="font-semibold">Featured:</label>
+                <input
+                  type="checkbox"
+                  checked={newProject.is_featured}
+                  onChange={(e) => setNewProject({ ...newProject, is_featured: e.target.checked })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleCreate}>Create</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="rounded-md border">
         <Table>
@@ -167,7 +340,7 @@ export function ProjectsTable() {
                   <TableCell className="font-medium">{project.title}</TableCell>
                   <TableCell className="max-w-xs truncate">{project.description}</TableCell>
                   <TableCell>
-                    {project.technologies.map((tech) => tech.name).join(", ")}
+                    {project.technologies.map((tech) => tech.name).join(", ") || "None"}
                   </TableCell>
                   <TableCell>{project.is_featured ? "Yes" : "No"}</TableCell>
                   <TableCell>{format(new Date(project.created_at), "MMM dd, yyyy")}</TableCell>
@@ -193,13 +366,42 @@ export function ProjectsTable() {
                             </div>
                             <div>
                               <h4 className="font-semibold mb-2">Technologies:</h4>
-                              <p className="text-sm">{selectedProject?.technologies.map((tech) => tech.name).join(", ")}</p>
+                              <p className="text-sm">{selectedProject?.technologies.map((tech) => tech.name).join(", ") || "None"}</p>
                             </div>
                             <div>
                               <h4 className="font-semibold mb-2">Featured:</h4>
                               <p className="text-sm">{selectedProject?.is_featured ? "Yes" : "No"}</p>
                             </div>
+                            <div>
+                              <h4 className="font-semibold mb-2">Project URL:</h4>
+                              <p className="text-sm">{selectedProject?.project_url}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold mb-2">GitHub URL:</h4>
+                              <p className="text-sm">{selectedProject?.github_url}</p>
+                            </div>
                             <div className="flex space-x-2 pt-4">
+                              <Button
+                                variant="outline"
+                                onClick={() => {
+                                  setEditProject({
+                                    title: project.title,
+                                    description: project.description,
+                                    image_url: project.image_url,
+                                    project_url: project.project_url,
+                                    github_url: project.github_url,
+                                    is_featured: project.is_featured,
+                                    sort_order: project.sort_order,
+                                    live_url: project.live_url,
+                                    repo_url: project.repo_url,
+                                  });
+                                  setIsEditOpen(true);
+                                }}
+                                className="flex items-center"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </Button>
                               <Button
                                 variant="destructive"
                                 onClick={() => selectedProject && handleDelete(selectedProject.id)}
@@ -210,6 +412,84 @@ export function ProjectsTable() {
                               </Button>
                             </div>
                           </div>
+                        </DialogContent>
+                      </Dialog>
+                      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle>Edit Project</DialogTitle>
+                            <DialogDescription>Update the project details.</DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="font-semibold">Title:</label>
+                              <Input
+                                value={editProject.title || ""}
+                                onChange={(e) => setEditProject({ ...editProject, title: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <label className="font-semibold">Description:</label>
+                              <Textarea
+                                value={editProject.description || ""}
+                                onChange={(e) => setEditProject({ ...editProject, description: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <label className="font-semibold">Image URL:</label>
+                              <Input
+                                value={editProject.image_url || ""}
+                                onChange={(e) => setEditProject({ ...editProject, image_url: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <label className="font-semibold">Project URL:</label>
+                              <Input
+                                value={editProject.project_url || ""}
+                                onChange={(e) => setEditProject({ ...editProject, project_url: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <label className="font-semibold">GitHub URL:</label>
+                              <Input
+                                value={editProject.github_url || ""}
+                                onChange={(e) => setEditProject({ ...editProject, github_url: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <label className="font-semibold">Live URL:</label>
+                              <Input
+                                value={editProject.live_url || ""}
+                                onChange={(e) => setEditProject({ ...editProject, live_url: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <label className="font-semibold">Repo URL:</label>
+                              <Input
+                                value={editProject.repo_url || ""}
+                                onChange={(e) => setEditProject({ ...editProject, repo_url: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <label className="font-semibold">Sort Order:</label>
+                              <Input
+                                type="number"
+                                value={editProject.sort_order || 0}
+                                onChange={(e) => setEditProject({ ...editProject, sort_order: Number(e.target.value) })}
+                              />
+                            </div>
+                            <div>
+                              <label className="font-semibold">Featured:</label>
+                              <input
+                                type="checkbox"
+                                checked={editProject.is_featured || false}
+                                onChange={(e) => setEditProject({ ...editProject, is_featured: e.target.checked })}
+                              />
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button onClick={() => selectedProject && handleEdit(selectedProject.id)}>Update</Button>
+                          </DialogFooter>
                         </DialogContent>
                       </Dialog>
                       <Button
