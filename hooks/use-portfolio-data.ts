@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -34,6 +35,10 @@ interface Feedback {
   subject?: string;
   content: string;
   priority?: string;
+}
+
+interface FeedbackWithSenderInfo extends Feedback {
+  connections: { name: string; email: string; subject: string; status: "read" | "unread" | "replied" } | null;
 }
 
 interface Project {
@@ -110,16 +115,16 @@ export function usePendingReviews(): UseDataArrayResult<Review> {
   return { data, loading, error, refetch: fetchData };
 }
 
-export function useFeedback(): UseDataArrayResult<Feedback> {
-  const [data, setData] = useState<Feedback[]>([]);
+export function useFeedback(): UseDataArrayResult<FeedbackWithSenderInfo> {
+  const [data, setData] = useState<FeedbackWithSenderInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
       setError(null);
-      const { getFeedback } = await import("@/lib/database/queries");
-      const result = await getFeedback();
+      const { getFeedbackWithSenderInfo } = await import("@/lib/database/queries");
+      const result = await getFeedbackWithSenderInfo();
       setData(result);
     } catch (err) {
       console.error("Error fetching feedback:", err);
