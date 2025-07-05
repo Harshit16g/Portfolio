@@ -1,4 +1,4 @@
-
+```typescript
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,15 +18,15 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { getFeedbackWithSenderInfo, updateFeedbackStatus, deleteFeedback, replyToFeedback } from "@/lib/database/admin-queries";
-import { Eye, Search, AlertTriangle, MessageCircle, Lightbulb, Trash2, Mail } from "lucide-react";
+import { useFeedback } from "@/hooks/use-portfolio-data";
+import { updateFeedbackStatus, deleteFeedback, replyToFeedback } from "@/lib/database/admin-queries";
+import { Eye, Search, AlertTriangle, MessageCircle, Lightbulb, Trash2, Mail, RefreshCw } from "lucide-react";
 
-// Feedback type definitions
 interface Feedback {
   id: string;
   type: string;
   created_at: string;
-  status: 'read' | 'unread' | 'replied';
+  status: "read" | "unread" | "replied";
   reply_message?: string;
   name?: string;
   email?: string;
@@ -35,48 +35,25 @@ interface Feedback {
   priority?: string;
 }
 
-interface FeedbackWithSenderInfo extends Feedback {
-  connections: { name: string; email: string; subject: string; status: 'read' | 'unread' | 'replied' } | null;
-}
-
 export function FeedbackTable() {
-  const [feedback, setFeedback] = useState<FeedbackWithSenderInfo[]>([]);
-  const [filteredFeedback, setFilteredFeedback] = useState<FeedbackWithSenderInfo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: feedback, loading, error, refetch } = useFeedback();
+  const [filteredFeedback, setFilteredFeedback] = useState<Feedback[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackWithSenderInfo | null>(null);
+  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
   const [replyMessage, setReplyMessage] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchFeedback();
-  }, []);
-
-  useEffect(() => {
-    const filtered = feedback.filter(
-      (item) =>
-        (item.connections?.name || item.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.connections?.email || item.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.connections?.subject || item.subject || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.content.toLowerCase().includes(searchTerm.toLowerCase())
+    setFilteredFeedback(
+      feedback.filter(
+        (item) =>
+          (item.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (item.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (item.subject || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.content.toLowerCase().includes(searchTerm.toLowerCase())
+      )
     );
-    setFilteredFeedback(filtered);
   }, [feedback, searchTerm]);
-
-  const fetchFeedback = async () => {
-    try {
-      const data = await getFeedbackWithSenderInfo();
-      setFeedback(data);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: `Failed to load feedback: ${error.message}`,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getTypeBadge = (type: string) => {
     switch (type) {
@@ -121,14 +98,14 @@ export function FeedbackTable() {
     }
   };
 
-  const handleUpdateStatus = async (id: string, status: 'read' | 'unread' | 'replied') => {
+  const handleUpdateStatus = async (id: string, status: "read" | "unread" | "replied") => {
     try {
       await updateFeedbackStatus(id, status);
       toast({
         title: "Feedback Status Updated",
         description: `Feedback status changed to ${status}.`,
       });
-      await fetchFeedback();
+      refetch();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -145,7 +122,7 @@ export function FeedbackTable() {
         title: "Feedback Deleted",
         description: "Feedback has been successfully deleted.",
       });
-      await fetchFeedback();
+      refetch();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -164,7 +141,7 @@ export function FeedbackTable() {
         title: "Reply Sent",
         description: "Reply has been successfully sent and feedback marked as replied.",
       });
-      await fetchFeedback();
+      refetch();
       setSelectedFeedback(null);
       setReplyMessage("");
     } catch (error: any) {
@@ -233,6 +210,18 @@ export function FeedbackTable() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="text-center py-8" aria-live="polite">
+        <p className="text-red-500">{error}</p>
+        <Button onClick={refetch} className="mt-4" aria-label="Retry loading feedback">
+          <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
@@ -269,9 +258,9 @@ export function FeedbackTable() {
             ) : (
               filteredFeedback.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.connections?.name || item.name || "N/A"}</TableCell>
-                  <TableCell>{item.connections?.email || item.email || "N/A"}</TableCell>
-                  <TableCell className="max-w-xs truncate">{item.connections?.subject || item.subject || "No subject"}</TableCell>
+                  <TableCell className="font-medium">{item.name || "N/A"}</TableCell>
+                  <TableCell>{item.email || "N/A"}</TableCell>
+                  <TableCell className="max-w-xs truncate">{item.subject || "No subject"}</TableCell>
                   <TableCell>{getTypeBadge(item.type || "feedback")}</TableCell>
                   <TableCell>{getPriorityBadge(item.priority || "normal")}</TableCell>
                   <TableCell>
@@ -281,30 +270,36 @@ export function FeedbackTable() {
                   <TableCell className="flex gap-2">
                     <Dialog onOpenChange={(open) => !open && setSelectedFeedback(null)}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" onClick={() => {
-                          setSelectedFeedback(item);
-                          setReplyMessage(item.reply_message || "");
-                        }}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedFeedback(item);
+                            setReplyMessage(item.reply_message || "");
+                          }}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl">
                         <DialogHeader>
                           <DialogTitle>
-                            {item.type === "complaint" ? "Complaint" : item.type === "suggestion" ? "Suggestion" : "Feedback"}
+                            {item.type === "complaint"
+                              ? "Complaint"
+                              : item.type === "suggestion"
+                              ? "Suggestion"
+                              : "Feedback"}
                           </DialogTitle>
                           <DialogDescription>
-                            {(item.connections?.name || item.name) && (item.connections?.email || item.email)
-                              ? `${item.connections?.name || item.name} (${item.connections?.email || item.email}) • `
-                              : ""}
-                            {format(new Date(item.created_at), "MMM dd, yyyy 'at' HH:mm")}
+                            {(item.name && item.email ? `${item.name} (${item.email}) • ` : "") +
+                              format(new Date(item.created_at), "MMM dd, yyyy 'at' HH:mm")}
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4">
-                          {(item.connections?.subject || item.subject) && (
+                          {item.subject && (
                             <div>
                               <h4 className="font-semibold mb-2">Subject:</h4>
-                              <p className="text-sm">{item.connections?.subject || item.subject}</p>
+                              <p className="text-sm">{item.subject}</p>
                             </div>
                           )}
                           <div>
@@ -326,12 +321,6 @@ export function FeedbackTable() {
                               <span className="text-sm font-medium">Status: </span>
                               <Badge variant="outline">{item.status}</Badge>
                             </div>
-                            {item.connections?.status && (
-                              <div>
-                                <span className="text-sm font-medium">Connection Status: </span>
-                                <Badge variant="outline">{item.connections.status}</Badge>
-                              </div>
-                            )}
                           </div>
                           <div className="space-y-2">
                             <h4 className="font-semibold">Reply to Feedback</h4>
@@ -344,13 +333,25 @@ export function FeedbackTable() {
                         </div>
                         <DialogFooter className="flex justify-between items-center">
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(item.id, 'read')}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleUpdateStatus(item.id, "read")}
+                            >
                               Mark as Read
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(item.id, 'unread')}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleUpdateStatus(item.id, "unread")}
+                            >
                               Mark as Unread
                             </Button>
-                            <Button variant="destructive" size="sm" onClick={() => handleDeleteFeedback(item.id)}>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteFeedback(item.id)}
+                            >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete
                             </Button>
@@ -372,3 +373,4 @@ export function FeedbackTable() {
     </div>
   );
 }
+```
