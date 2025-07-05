@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
     }
 
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
+    const {ADMIN_PASSWORD} = process.env
     const JWT_SECRET = process.env.ADMIN_SECRET_KEY
 
     const body = await request.json()
