@@ -20,6 +20,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -299,14 +305,17 @@ export function ProjectsManagement() {
                   >
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        {project.image_url && (
+                        {project.image_url ? (
                           <img 
                             src={project.image_url} 
                             alt={`${project.title} logo`} 
                             className="w-8 h-8 rounded bg-muted flex-shrink-0 object-cover"
                           />
+                        ) : (
+                          <div className="w-8 h-8 rounded bg-muted flex-shrink-0 flex items-center justify-center text-muted-foreground text-sm font-medium">
+                            {project.title ? project.title.charAt(0).toUpperCase() : "?"}
+                          </div>
                         )}
-                        {/* TODO: Add placeholder when image_url is missing */}
                         <div>
                           <div className="font-semibold">{project.title}</div>
                           <div className="text-sm text-muted-foreground truncate max-w-xs">
@@ -323,9 +332,24 @@ export function ProjectsManagement() {
                           </Badge>
                         ))}
                         {project.technologies.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{project.technologies.length - 3}
-                          </Badge>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge variant="outline" className="text-xs cursor-pointer">
+                                  +{project.technologies.length - 3}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" align="center">
+                                <div className="flex flex-wrap gap-1 max-w-xs">
+                                  {project.technologies.map((tech) => (
+                                    <span key={tech.id} className="block text-xs">
+                                      {tech.name}
+                                    </span>
+                                  ))}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                       </div>
                     </TableCell>

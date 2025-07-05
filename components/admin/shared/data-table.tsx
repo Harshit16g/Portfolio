@@ -48,13 +48,22 @@ export function DataTable<T extends Record<string, any>>({
       // Handle nested properties like 'user.name'
       const keys = column.key.split('.')
       let value = item
-      for (const key of keys) {
-        value = value?.[key]
+      
+      try {
+        for (const key of keys) {
+          if (value === null || value === undefined) {
+            return ""
+          }
+          value = value?.[key]
+        }
+        return value ?? ""
+      } catch (error) {
+        console.error(`Error accessing nested property '${column.key}':`, error)
+        return ""
       }
-      return value
     }
     
-    return item[column.key as keyof T]
+    return item[column.key as keyof T] ?? ""
   }
 
   return (

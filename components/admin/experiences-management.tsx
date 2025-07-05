@@ -20,6 +20,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -123,12 +129,12 @@ export function ExperiencesManagement() {
     try {
       // Validate startDate
       if (!startDate) {
-        return "Invalid date"
+        return ""
       }
       
       const startDateObj = new Date(startDate)
       if (isNaN(startDateObj.getTime())) {
-        return "Invalid start date"
+        return ""
       }
       
       const start = format(startDateObj, "MMM yyyy")
@@ -140,7 +146,7 @@ export function ExperiencesManagement() {
       if (endDate) {
         const endDateObj = new Date(endDate)
         if (isNaN(endDateObj.getTime())) {
-          return `${start} - Invalid end date`
+          return start // Return just start date if end date is invalid
         }
         const end = format(endDateObj, "MMM yyyy")
         return `${start} - ${end}`
@@ -149,7 +155,7 @@ export function ExperiencesManagement() {
       return start
     } catch (error) {
       console.error("Date formatting error:", error)
-      return "Invalid date format"
+      return ""
     }
   }
 
@@ -413,9 +419,24 @@ export function ExperiencesManagement() {
                           </Badge>
                         ))}
                         {experience.technologies.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{experience.technologies.length - 3}
-                          </Badge>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge variant="outline" className="text-xs cursor-pointer">
+                                  +{experience.technologies.length - 3}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" align="center">
+                                <div className="flex flex-wrap gap-1 max-w-xs">
+                                  {experience.technologies.map((tech) => (
+                                    <span key={tech.id} className="block text-xs">
+                                      {tech.name}
+                                    </span>
+                                  ))}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                       </div>
                     </TableCell>
