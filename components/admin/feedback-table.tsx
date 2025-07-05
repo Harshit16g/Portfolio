@@ -19,10 +19,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useFeedback } from "@/hooks/use-portfolio-data";
-import { updateFeedbackStatus, deleteFeedback, replyToFeedback } from "@/lib/database/admin-queries";
+import { updateFeedbackStatus, deleteFeedback, replyToFeedback } from "@/lib/database/queries";
 import { Eye, Search, AlertTriangle, MessageCircle, Lightbulb, Trash2, Mail, RefreshCw } from "lucide-react";
 
-interface Feedback {
+interface FeedbackWithSenderInfo {
   id: string;
   type: string;
   created_at: string;
@@ -33,13 +33,14 @@ interface Feedback {
   subject?: string;
   content: string;
   priority?: string;
+  connections: { name: string; email: string; subject: string; status: "read" | "unread" | "replied" } | null;
 }
 
 export function FeedbackTable() {
   const { data: feedback, loading, error, refetch } = useFeedback();
-  const [filteredFeedback, setFilteredFeedback] = useState<Feedback[]>([]);
+  const [filteredFeedback, setFilteredFeedback] = useState<FeedbackWithSenderInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
+  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackWithSenderInfo | null>(null);
   const [replyMessage, setReplyMessage] = useState("");
   const { toast } = useToast();
 
@@ -47,9 +48,9 @@ export function FeedbackTable() {
     setFilteredFeedback(
       feedback.filter(
         (item) =>
-          (item.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (item.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (item.subject || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (item.connections?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (item.connections?.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (item.connections?.subject || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
           item.content.toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
@@ -258,9 +259,9 @@ export function FeedbackTable() {
             ) : (
               filteredFeedback.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.name || "N/A"}</TableCell>
-                  <TableCell>{item.email || "N/A"}</TableCell>
-                  <TableCell className="max-w-xs truncate">{item.subject || "No subject"}</TableCell>
+                  <TableCell className="font-medium">{item.connections?.name || item.name || "N/A"}</TableCell>
+                  <TableCell>{item.connections?.email || item.email || "N/A"}</TableCell>
+                  <TableCell className="max-w-xs truncate">{item.connections?.subject || item.subject || "No subject"}</TableCell>
                   <TableCell>{getTypeBadge(item.type || "feedback")}</TableCell>
                   <TableCell>{getPriorityBadge(item.priority || "normal")}</TableCell>
                   <TableCell>
@@ -291,15 +292,18 @@ export function FeedbackTable() {
                               : "Feedback"}
                           </DialogTitle>
                           <DialogDescription>
-                            {(item.name && item.email ? `${item.name} (${item.email}) • ` : "") +
-                              format(new Date(item.created_at), "MMM dd, yyyy 'at' HH:mm")}
+                            {(item.connections?.name && item.connections?.email
+                              ? `${item.connections.name} (${item.connections.email}) • `
+                              : item.name && item.email
+                              ? `${item.name} (${item.email}) • `
+                              : "") + format(new Date(item.created_at), "MMM dd, yyyy 'at' HH:mm")}
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4">
-                          {item.subject && (
+                          {(item.connections?.subject || item.subject) && (
                             <div>
                               <h4 className="font-semibold mb-2">Subject:</h4>
-                              <p className="text-sm">{item.subject}</p>
+                              <p className="text-sm">{item.connections?.subject || item.subject}</p>
                             </div>
                           )}
                           <div>
@@ -373,4 +377,3 @@ export function FeedbackTable() {
     </div>
   );
 }
-
