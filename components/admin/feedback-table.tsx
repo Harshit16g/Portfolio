@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { format } from "date-fns"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
+import { useEffect, useState } from "react";
+import { format } from "date-fns";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -13,59 +13,69 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter
-} from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/components/ui/use-toast"
-import { getFeedbackWithSenderInfo, updateFeedbackStatus, deleteFeedback, replyToFeedback } from "@/lib/database/admin-queries"
-import type { Database } from "@/lib/supabase/types"
-import { Eye, Search, AlertTriangle, MessageCircle, Lightbulb, Trash2, Mail, Ban } from "lucide-react"
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { getFeedbackWithSenderInfo, updateFeedbackStatus, deleteFeedback, replyToFeedback } from "@/lib/database/admin-queries";
+import { Eye, Search, AlertTriangle, MessageCircle, Lightbulb, Trash2, Mail } from "lucide-react";
 
-type Feedback = Database["public"]["Tables"]["feedback"]["Row"]
+// Feedback type definitions
+interface Feedback {
+  id: string;
+  type: string;
+  created_at: string;
+  status: 'read' | 'unread' | 'replied';
+  reply_message?: string;
+  name?: string;
+  email?: string;
+  subject?: string;
+  content: string;
+  priority?: string;
+}
 
 interface FeedbackWithSenderInfo extends Feedback {
-  connections: { name: string; email: string; subject: string } | null;
+  connections: { name: string; email: string; subject: string; status: 'read' | 'unread' | 'replied' } | null;
 }
 
 export function FeedbackTable() {
-  const [feedback, setFeedback] = useState<FeedbackWithSenderInfo[]>([])
-  const [filteredFeedback, setFilteredFeedback] = useState<FeedbackWithSenderInfo[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackWithSenderInfo | null>(null)
-  const [replyMessage, setReplyMessage] = useState("")
-  const { toast } = useToast()
+  const [feedback, setFeedback] = useState<FeedbackWithSenderInfo[]>([]);
+  const [filteredFeedback, setFilteredFeedback] = useState<FeedbackWithSenderInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackWithSenderInfo | null>(null);
+  const [replyMessage, setReplyMessage] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
-    fetchFeedback()
-  }, [])
+    fetchFeedback();
+  }, []);
 
   useEffect(() => {
     const filtered = feedback.filter(
       (item) =>
-        (item.connections?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-        (item.connections?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-        (item.connections?.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-        item.content.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-    setFilteredFeedback(filtered)
-  }, [feedback, searchTerm])
+        (item.connections?.name || item.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.connections?.email || item.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.connections?.subject || item.subject || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.content.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredFeedback(filtered);
+  }, [feedback, searchTerm]);
 
   const fetchFeedback = async () => {
     try {
-      const data = await getFeedbackWithSenderInfo()
-      setFeedback(data)
-    } catch (error) {
-      console.error("Error fetching feedback:", error)
+      const data = await getFeedbackWithSenderInfo();
+      setFeedback(data);
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: `Failed to load feedback: ${(error as Error).message}`,
+        description: `Failed to load feedback: ${error.message}`,
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const getTypeBadge = (type: string) => {
     switch (type) {
@@ -75,112 +85,95 @@ export function FeedbackTable() {
             <MessageCircle className="h-3 w-3 mr-1" />
             Feedback
           </Badge>
-        )
+        );
       case "complaint":
         return (
           <Badge variant="destructive">
             <AlertTriangle className="h-3 w-3 mr-1" />
             Complaint
           </Badge>
-        )
+        );
       case "suggestion":
         return (
           <Badge variant="secondary">
             <Lightbulb className="h-3 w-3 mr-1" />
             Suggestion
           </Badge>
-        )
+        );
       default:
-        return <Badge variant="outline">{type}</Badge>
+        return <Badge variant="outline">{type}</Badge>;
     }
-  }
+  };
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return <Badge variant="destructive">Urgent</Badge>
+        return <Badge variant="destructive">Urgent</Badge>;
       case "high":
-        return <Badge variant="destructive">High</Badge>
+        return <Badge variant="destructive">High</Badge>;
       case "normal":
-        return <Badge variant="secondary">Normal</Badge>
+        return <Badge variant="secondary">Normal</Badge>;
       case "low":
-        return <Badge variant="outline">Low</Badge>
+        return <Badge variant="outline">Low</Badge>;
       default:
-        return <Badge variant="outline">{priority}</Badge>
+        return <Badge variant="outline">{priority}</Badge>;
     }
-  }
+  };
 
-  const handleUpdateStatus = async (id: string, status: 'read' | 'spam' | 'archived') => {
+  const handleUpdateStatus = async (id: string, status: 'read' | 'unread' | 'replied') => {
     try {
-      const success = await updateFeedbackStatus(id, status)
-      if (success) {
-        toast({
-          title: "Feedback Status Updated",
-          description: `Feedback status changed to ${status}.`,
-        })
-        fetchFeedback()
-      } else {
-        throw new Error("Failed to update status")
-      }
-    } catch (error) {
-      console.error("Error updating feedback status:", error)
+      await updateFeedbackStatus(id, status);
+      toast({
+        title: "Feedback Status Updated",
+        description: `Feedback status changed to ${status}.`,
+      });
+      await fetchFeedback();
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: `Failed to update feedback status: ${(error as Error).message}`,
+        description: `Failed to update feedback status: ${error.message}`,
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleDeleteFeedback = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this feedback?")) {
-      try {
-        const success = await deleteFeedback(id)
-        if (success) {
-          toast({
-            title: "Feedback Deleted",
-            description: "Feedback has been successfully deleted.",
-          })
-          fetchFeedback()
-        } else {
-          throw new Error("Failed to delete feedback")
-        }
-      } catch (error) {
-        console.error("Error deleting feedback:", error)
-        toast({
-          title: "Error",
-          description: `Failed to delete feedback: ${(error as Error).message}`,
-          variant: "destructive",
-        })
-      }
-    }
-  }
-
-  const handleReply = async () => {
-    if (!selectedFeedback || !replyMessage) return
-
     try {
-      const success = await replyToFeedback(selectedFeedback.id, replyMessage)
-      if (success) {
-        toast({
-          title: "Reply Sent",
-          description: "Reply has been successfully sent and feedback marked as replied.",
-        })
-        fetchFeedback()
-        setSelectedFeedback(null)
-        setReplyMessage("")
-      } else {
-        throw new Error("Failed to send reply")
-      }
-    } catch (error) {
-      console.error("Error sending reply:", error)
+      await deleteFeedback(id);
+      toast({
+        title: "Feedback Deleted",
+        description: "Feedback has been successfully deleted.",
+      });
+      await fetchFeedback();
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: `Failed to send reply: ${(error as Error).message}`,
+        description: `Failed to delete feedback: ${error.message}`,
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
+
+  const handleReply = async () => {
+    if (!selectedFeedback || !replyMessage) return;
+
+    try {
+      await replyToFeedback(selectedFeedback.id, replyMessage);
+      toast({
+        title: "Reply Sent",
+        description: "Reply has been successfully sent and feedback marked as replied.",
+      });
+      await fetchFeedback();
+      setSelectedFeedback(null);
+      setReplyMessage("");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to send reply: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -236,7 +229,7 @@ export function FeedbackTable() {
           </Table>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -275,21 +268,21 @@ export function FeedbackTable() {
             ) : (
               filteredFeedback.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.connections?.name || "N/A"}</TableCell>
-                  <TableCell>{item.connections?.email || "N/A"}</TableCell>
-                  <TableCell className="max-w-xs truncate">{item.connections?.subject || "No subject"}</TableCell>
+                  <TableCell className="font-medium">{item.connections?.name || item.name || "N/A"}</TableCell>
+                  <TableCell>{item.connections?.email || item.email || "N/A"}</TableCell>
+                  <TableCell className="max-w-xs truncate">{item.connections?.subject || item.subject || "No subject"}</TableCell>
                   <TableCell>{getTypeBadge(item.type || "feedback")}</TableCell>
                   <TableCell>{getPriorityBadge(item.priority || "normal")}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{item.status || "open"}</Badge>
+                    <Badge variant="outline">{item.status}</Badge>
                   </TableCell>
                   <TableCell>{format(new Date(item.created_at), "MMM dd, yyyy")}</TableCell>
                   <TableCell className="flex gap-2">
                     <Dialog onOpenChange={(open) => !open && setSelectedFeedback(null)}>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm" onClick={() => {
-                          setSelectedFeedback(item)
-                          setReplyMessage(item.reply_message || "")
+                          setSelectedFeedback(item);
+                          setReplyMessage(item.reply_message || "");
                         }}>
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -297,51 +290,51 @@ export function FeedbackTable() {
                       <DialogContent className="max-w-2xl">
                         <DialogHeader>
                           <DialogTitle>
-                            {selectedFeedback?.type === "complaint"
-                              ? "Complaint"
-                              : selectedFeedback?.type === "suggestion"
-                                ? "Suggestion"
-                                : "Feedback"}
+                            {item.type === "complaint" ? "Complaint" : item.type === "suggestion" ? "Suggestion" : "Feedback"}
                           </DialogTitle>
                           <DialogDescription>
-                            {selectedFeedback?.connections?.name &&
-                              selectedFeedback?.connections?.email &&
-                              `${selectedFeedback.connections.name} (${selectedFeedback.connections.email}) • `}
-                            {selectedFeedback &&
-                              format(new Date(selectedFeedback.created_at), "MMM dd, yyyy 'at' HH:mm")}
+                            {(item.connections?.name || item.name) && (item.connections?.email || item.email)
+                              ? `${item.connections?.name || item.name} (${item.connections?.email || item.email}) • `
+                              : ""}
+                            {format(new Date(item.created_at), "MMM dd, yyyy 'at' HH:mm")}
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4">
-                          {selectedFeedback?.connections?.subject && (
+                          {(item.connections?.subject || item.subject) && (
                             <div>
                               <h4 className="font-semibold mb-2">Subject:</h4>
-                              <p className="text-sm">{selectedFeedback.connections.subject}</p>
+                              <p className="text-sm">{item.connections?.subject || item.subject}</p>
                             </div>
                           )}
                           <div>
                             <h4 className="font-semibold mb-2">Content:</h4>
-                            <p className="text-sm whitespace-pre-wrap">{selectedFeedback?.content}</p>
+                            <p className="text-sm whitespace-pre-wrap">{item.content}</p>
                           </div>
-                          {selectedFeedback?.reply_message && (
+                          {item.reply_message && (
                             <div>
                               <h4 className="font-semibold mb-2">Admin Reply:</h4>
-                              <p className="text-sm whitespace-pre-wrap">{selectedFeedback.reply_message}</p>
+                              <p className="text-sm whitespace-pre-wrap">{item.reply_message}</p>
                             </div>
                           )}
                           <div className="flex items-center space-x-4">
                             <div>
                               <span className="text-sm font-medium">Priority: </span>
-                              {selectedFeedback && getPriorityBadge(selectedFeedback.priority || "normal")}
+                              {getPriorityBadge(item.priority || "normal")}
                             </div>
                             <div>
                               <span className="text-sm font-medium">Status: </span>
-                              <Badge variant="outline">{selectedFeedback?.status || "open"}</Badge>
+                              <Badge variant="outline">{item.status}</Badge>
                             </div>
+                            {item.connections?.status && (
+                              <div>
+                                <span className="text-sm font-medium">Connection Status: </span>
+                                <Badge variant="outline">{item.connections.status}</Badge>
+                              </div>
+                            )}
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="reply-message">Reply to Feedback</Label>
+                            <h4 className="font-semibold">Reply to Feedback</h4>
                             <Textarea
-                              id="reply-message"
                               placeholder="Type your reply here..."
                               value={replyMessage}
                               onChange={(e) => setReplyMessage(e.target.value)}
@@ -353,16 +346,15 @@ export function FeedbackTable() {
                             <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(item.id, 'read')}>
                               Mark as Read
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(item.id, 'spam')}>
-                              <Ban className="h-4 w-4 mr-2" />
-                              Mark as Spam
+                            <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(item.id, 'unread')}>
+                              Mark as Unread
                             </Button>
                             <Button variant="destructive" size="sm" onClick={() => handleDeleteFeedback(item.id)}>
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete
                             </Button>
                           </div>
-                          <Button onClick={handleReply} disabled={!replyMessage || selectedFeedback?.status === 'replied'}>
+                          <Button onClick={handleReply} disabled={!replyMessage}>
                             <Mail className="h-4 w-4 mr-2" />
                             Send Reply
                           </Button>
@@ -377,5 +369,5 @@ export function FeedbackTable() {
         </Table>
       </div>
     </div>
-  )
+  );
 }
