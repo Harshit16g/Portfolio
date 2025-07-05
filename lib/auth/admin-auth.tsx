@@ -21,7 +21,7 @@ export function useAdminAuth() {
 
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true) // Initialize to true to prevent flash of unauthenticated UI
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {

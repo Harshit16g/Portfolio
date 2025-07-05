@@ -12,7 +12,7 @@ export async function GET() {
 
     const JWT_SECRET = process.env.ADMIN_SECRET_KEY
 
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const token = cookieStore.get("admin-token")?.value
 
     if (!token) {

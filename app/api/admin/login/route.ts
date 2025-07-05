@@ -5,6 +5,9 @@ import { sign } from "jsonwebtoken"
 const SESSION_DURATION = 60 * 60 * 1000 // 1 hour
 
 // Store failed attempts in memory (in production, use Redis or database)
+// Note: This in-memory implementation will reset on server restart and 
+// won't work across multiple server instances. For production deployments,
+// consider using Redis, database, or a distributed cache solution.
 const failedAttempts = new Map<string, { count: number, lastAttempt: number }>()
 const MAX_ATTEMPTS = 5
 const LOCKOUT_TIME = 15 * 60 * 1000 // 15 minutes
@@ -98,7 +101,7 @@ export async function POST(request: NextRequest) {
     )
 
     // Set secure cookie
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     cookieStore.set("admin-token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
