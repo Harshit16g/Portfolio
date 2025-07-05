@@ -148,7 +148,7 @@ export async function deleteFeedback(id: string): Promise<boolean> {
   })
 }
 
-export async function getFeedbackWithSenderInfo(): Promise<Feedback[]> {
+export async function getFeedbackWithSenderInfo(): Promise<FeedbackWithSenderInfo[]> {
   return withRetry(async () => {
     const { data, error } = await supabase
       .from("feedback")
@@ -159,7 +159,7 @@ export async function getFeedbackWithSenderInfo(): Promise<Feedback[]> {
       throw new Error(`Error fetching feedback with sender info: ${error.message}`)
     }
 
-    return data as Feedback[]
+    return data as FeedbackWithSenderInfo[]
   })
 }
 
