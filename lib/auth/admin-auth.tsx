@@ -5,17 +5,13 @@ import { useState, useEffect, createContext, useContext } from "react"
 
 interface AdminAuthContextType {
   isAuthenticated: boolean
-  login: (password: string) => boolean
-  logout: () => void
+  login: (password: string) => Promise<boolean>
+  logout: () => Promise<void>
   loading: boolean
   error: string | null
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined)
-
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD
-const SESSION_DURATION = 60 * 60 * 1000
-const AUTH_KEY = "portfolio_admin_auth"
 
 export function useAdminAuth() {
   const ctx = useContext(AdminAuthContext)
@@ -29,53 +25,75 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const raw = localStorage.getItem(AUTH_KEY)
-    if (raw) {
-      try {
-        const { authenticated, timestamp } = JSON.parse(raw)
-        if (authenticated && Date.now() - timestamp < SESSION_DURATION) {
-          setIsAuthenticated(true)
-        } else {
-          localStorage.removeItem(AUTH_KEY)
-        }
-      } catch {
-        localStorage.removeItem(AUTH_KEY)
-      }
-    }
-    setLoading(false)
+    checkAuthStatus()
   }, [])
 
-  const login = (password: string) => {
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true)
-      localStorage.setItem(
-        AUTH_KEY,
-        JSON.stringify({ authenticated: true, timestamp: Date.now() })
-      )
-      setError(null)
-      return true
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch("/api/admin/verify", {
+        method: "GET",
+        credentials: "include"
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setIsAuthenticated(data.authenticated)
+      } else {
+        setIsAuthenticated(false)
+      }
+    } catch (error) {
+      console.error("Auth check failed:", error)
+      setIsAuthenticated(false)
+    } finally {
+      setLoading(false)
     }
-    setError("Invalid password")
-    return false
   }
 
-  const logout = () => {
-    setIsAuthenticated(false)
-    localStorage.removeItem(AUTH_KEY)
+  const login = async (password: string): Promise<boolean> => {
+    try {
+      setError(null)
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ password }),
+      })
+
+      if (response.ok) {
+        setIsAuthenticated(true)
+        return true
+      } else {
+        const data = await response.json()
+        setError(data.error || "Authentication failed")
+        return false
+      }
+    } catch (error: any) {
+      console.error("Login error:", error)
+      setError("Network error occurred")
+      return false
+    }
   }
 
+  const logout = async (): Promise<void> => {
+    try {
+      await fetch("/api/admin/logout", {
+        method: "POST",
+        credentials: "include"
+      })
+    } catch (error) {
+      console.error("Logout error:", error)
+    } finally {
+      setIsAuthenticated(false)
+    }
+  }
+
+  // Auto-check auth status periodically
   useEffect(() => {
     if (!isAuthenticated) return
-    const interval = setInterval(() => {
-      const raw = localStorage.getItem(AUTH_KEY)
-      if (!raw) return logout()
-      try {
-        const { timestamp } = JSON.parse(raw)
-        if (Date.now() - timestamp >= SESSION_DURATION) logout()
-      } catch {
-        logout()
-      }
-    }, 60000)
+    
+    const interval = setInterval(checkAuthStatus, 5 * 60 * 1000) // Check every 5 minutes
     return () => clearInterval(interval)
   }, [isAuthenticated])
 
