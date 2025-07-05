@@ -1,43 +1,40 @@
-"use client"
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { MessageCircle, Send, X, Users, Shield } from "lucide-react"
-import { supabase } from "@/lib/supabase/client"
-import { useToast } from "@/hooks/use-toast"
-import { useRateLimit } from "@/hooks/use-rate-limit"
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { MessageCircle, Send, X, Users, Shield } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useRateLimit } from "@/hooks/use-rate-limit";
 
 interface FeedbackItem {
-  id: string
-  content: string
-  created_at: string
-  is_anonymous: boolean
+  id: string;
+  content: string;
+  created_at: string;
+  is_anonymous: boolean;
 }
 
 export function LiveFeedbackWidget() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [feedback, setFeedback] = useState("")
-  const [recentFeedback, setRecentFeedback] = useState<FeedbackItem[]>([])
-  const [feedbackCount, setFeedbackCount] = useState(0)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { toast } = useToast()
+  const [isOpen, setIsOpen] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [recentFeedback, setRecentFeedback] = useState<FeedbackItem[]>([]);
+  const [feedbackCount, setFeedbackCount] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
-  // Rate limiting: 5 feedback submissions per 5 minutes
   const { checkRateLimit, isLimited } = useRateLimit({
     maxRequests: 5,
-    windowMs: 300000, // 5 minutes
+    windowMs: 300000,
     action: "feedback_widget",
-  })
+  });
 
   useEffect(() => {
-    // Fetch initial feedback count
-    fetchFeedbackCount()
-
-    // Subscribe to realtime changes
+    fetchFeedbackCount();
     const channel = supabase
       .channel("feedback_changes")
       .on(
@@ -48,33 +45,33 @@ export function LiveFeedbackWidget() {
           table: "feedback",
         },
         (payload) => {
-          console.log("Feedback change:", payload)
-          fetchFeedbackCount()
+          console.log("Feedback change:", payload);
+          fetchFeedbackCount();
           if (payload.eventType === "INSERT") {
-            fetchRecentFeedback()
+            fetchRecentFeedback();
           }
-        },
+        }
       )
-      .subscribe()
+      .subscribe();
 
     return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const fetchFeedbackCount = async () => {
     try {
       const { count, error } = await supabase
         .from("feedback")
         .select("*", { count: "exact", head: true })
-        .eq("type", "feedback")
+        .eq("type", "feedback");
 
-      if (error) throw error
-      setFeedbackCount(count || 0)
+      if (error) throw error;
+      setFeedbackCount(count || 0);
     } catch (error) {
-      console.error("Error fetching feedback count:", error)
+      console.error("Error fetching feedback count:", error);
     }
-  }
+  };
 
   const fetchRecentFeedback = async () => {
     try {
@@ -83,29 +80,28 @@ export function LiveFeedbackWidget() {
         .select("id, content, created_at")
         .eq("type", "feedback")
         .order("created_at", { ascending: false })
-        .limit(3)
+        .limit(3);
 
-      if (error) throw error
+      if (error) throw error;
       setRecentFeedback(
         data.map((item) => ({
           ...item,
           is_anonymous: true,
-        })),
-      )
+        }))
+      );
     } catch (error) {
-      console.error("Error fetching recent feedback:", error)
+      console.error("Error fetching recent feedback:", error);
     }
-  }
+  };
 
   const submitFeedback = async () => {
-    if (!feedback.trim()) return
+    if (!feedback.trim()) return;
 
-    // Check rate limit before proceeding
     if (!checkRateLimit()) {
-      return
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
       const { error } = await supabase.from("feedback").insert([
         {
@@ -114,30 +110,29 @@ export function LiveFeedbackWidget() {
           status: "open",
           priority: "normal",
         },
-      ])
+      ]);
 
-      if (error) throw error
+      if (error) throw error;
 
-      setFeedback("")
+      setFeedback("");
       toast({
         title: "Feedback submitted!",
         description: "Thank you for your feedback. It helps improve the site!",
-      })
+      });
     } catch (error) {
-      console.error("Error submitting feedback:", error)
+      console.error("Error submitting feedback:", error);
       toast({
         title: "Error",
         description: "Failed to submit feedback. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <>
-      {/* Floating trigger button */}
       <motion.div
         className="fixed bottom-6 right-6 z-50"
         initial={{ scale: 0 }}
@@ -158,7 +153,6 @@ export function LiveFeedbackWidget() {
         </Button>
       </motion.div>
 
-      {/* Feedback widget */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -237,5 +231,5 @@ export function LiveFeedbackWidget() {
         )}
       </AnimatePresence>
     </>
-  )
+  );
 }
