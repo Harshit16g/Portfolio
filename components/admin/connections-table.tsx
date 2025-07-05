@@ -1,4 +1,4 @@
-```typescript
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -294,4 +294,4 @@ export function ConnectionsTable() {
     </div>
   );
 }
-```
+
