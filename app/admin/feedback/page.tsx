@@ -1,10 +1,10 @@
-import { FeedbackTable } from "@/components/admin/feedback-table"
-import type { Metadata } from "next"
+import { FeedbackTable } from "@/components/admin/feedback-table";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Feedback Management | Admin",
   description: "Manage user feedback and support requests.",
-}
+};
 
 export default function AdminFeedbackPage() {
   return (
@@ -12,5 +12,5 @@ export default function AdminFeedbackPage() {
       <h1 className="text-3xl font-bold tracking-tight mb-6">Feedback Management</h1>
       <FeedbackTable />
     </div>
-  )
+  );
 }
