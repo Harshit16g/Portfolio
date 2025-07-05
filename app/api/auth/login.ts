@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     if (session) {
       return NextResponse.json({ success: true }, {
         headers: {
-          "Set-Cookie": `supabase-auth-token=${session.access_token}; HttpOnly; Secure; SameSite=Strict; Max-Age=${session.expires_in}`,
+          "Set-Cookie": `supabase-auth-token=${session.access_token}; HttpOnly; Secure; SameSite=Strict; Max-Age=${session.expires_in}; Path=/`,
         },
       })
     }
