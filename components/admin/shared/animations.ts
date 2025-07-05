@@ -117,6 +117,63 @@ export const scaleInVariants: Variants = {
   }
 }
 
+export const springScaleVariants: Variants = {
+  hidden: { 
+    opacity: 0,
+    y: 30,
+    scale: 0.9 
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1],
+      type: "spring",
+      stiffness: 100
+    }
+  }
+}
+
+export const slideTransitionVariants: Variants = {
+  hidden: { 
+    opacity: 0,
+    x: 20 
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  },
+  exit: { 
+    opacity: 0,
+    x: -20,
+    transition: {
+      duration: 0.3
+    }
+  }
+}
+
+export const staggeredItemVariants: Variants = {
+  hidden: { 
+    opacity: 0,
+    y: 20 
+  },
+  visible: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      delay: index * 0.1,
+      ease: "easeOut"
+    }
+  })
+}
+
 // Helper functions for common motion props
 export const getStaggeredTableProps = (index: number) => ({
   initial: "hidden",

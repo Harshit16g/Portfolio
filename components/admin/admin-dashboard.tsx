@@ -14,6 +14,16 @@ import { ExperiencesManagement } from "./experiences-management"
 import { AdminLogin } from "./admin-login"
 import { useAdminAuth, AdminAuthProvider } from "@/lib/auth/admin-auth"
 import { MessageSquare, Star, MessageCircle, BarChart3, LogOut, Shield, Activity, Clock, User, Briefcase, Code, Settings } from "lucide-react"
+import { 
+  containerVariants, 
+  itemVariants, 
+  fadeInVariants, 
+  slideUpVariants,
+  slideTransitionVariants,
+  staggeredItemVariants,
+  getContainerMotionProps,
+  getItemMotionProps 
+} from "./shared/animations"
 
 function AdminDashboardContent() {
   const [activeTab, setActiveTab] = useState("connections")
@@ -83,16 +93,16 @@ function AdminDashboardContent() {
       className="container mx-auto px-4 py-8 md:px-6"
     >
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.5 }}
+        variants={slideUpVariants}
+        initial="hidden"
+        animate="visible"
         className="mb-8 flex items-center justify-between"
       >
         <div>
           <motion.h1
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
+            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
             className="text-3xl font-bold tracking-tight flex items-center gap-2"
           >
             <motion.div
@@ -104,18 +114,18 @@ function AdminDashboardContent() {
             Admin Dashboard
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
+            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
             className="text-muted-foreground"
           >
             Manage your portfolio content and user interactions.
           </motion.p>
         </div>
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
+          variants={itemVariants}
+          initial="hidden"
+          animate="visible"
           className="flex items-center gap-4"
         >
           <div className="hidden md:flex items-center gap-2">
@@ -165,15 +175,15 @@ function AdminDashboardContent() {
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
+        variants={slideUpVariants}
+        initial="hidden"
+        animate="visible"
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.4 }}
+            variants={fadeInVariants}
+            initial="hidden"
+            animate="visible"
           >
             <TabsList className="grid w-full grid-cols-6">
               {[
@@ -186,9 +196,10 @@ function AdminDashboardContent() {
               ].map((tab, index) => (
                 <motion.div
                   key={tab.value}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 + index * 0.1, duration: 0.3 }}
+                  variants={staggeredItemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  custom={index}
                 >
                   <TabsTrigger 
                     value={tab.value} 
@@ -205,10 +216,10 @@ function AdminDashboardContent() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
+            variants={slideTransitionVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
           >
             <TabsContent value="connections" className="space-y-6">
               <Card>

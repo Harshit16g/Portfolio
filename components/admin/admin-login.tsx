@@ -11,6 +11,14 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { useAdminAuth } from "@/lib/auth/admin-auth"
 import { Lock, Eye, EyeOff, Shield, AlertTriangle, CheckCircle, Loader2 } from "lucide-react"
+import { 
+  containerVariants, 
+  itemVariants, 
+  fadeInVariants, 
+  slideUpVariants,
+  scaleInVariants,
+  springScaleVariants
+} from "./shared/animations"
 
 export function AdminLogin() {
   const [password, setPassword] = useState("")
@@ -79,14 +87,9 @@ export function AdminLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
       <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ 
-          duration: 0.6, 
-          ease: [0.22, 1, 0.36, 1],
-          type: "spring",
-          stiffness: 100
-        }}
+        variants={springScaleVariants}
+        initial="hidden"
+        animate="visible"
         className="w-full max-w-md"
       >
         <Card className="shadow-2xl border-2 relative overflow-hidden">

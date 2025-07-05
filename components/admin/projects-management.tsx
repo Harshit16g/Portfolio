@@ -227,6 +227,7 @@ export function ProjectsManagement() {
       onSearchChange={setSearchTerm}
       renderActions={renderActions}
       // onAdd functionality temporarily disabled until CRUD API is implemented
+      // TODO: When implementing dialogs, use the shared FormDialog component from ./shared/form-dialog.tsx
       // onAdd={openCreateDialog}
       // addButtonText="Add Project"
     />

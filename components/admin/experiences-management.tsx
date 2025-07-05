@@ -2,7 +2,6 @@
 
 import { useMemo } from "react"
 import { format } from "date-fns"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Tooltip,
@@ -54,22 +53,8 @@ export function ExperiencesManagement() {
     initialFormData,
   })
 
-  // Employment type badge renderer (placeholder - field doesn't exist in current schema)
-  const getEmploymentTypeBadge = (type: string = "full-time") => {
-    const colors = {
-      "full-time": "default",
-      "part-time": "secondary",
-      "contract": "outline",
-      "internship": "destructive",
-      "freelance": "secondary"
-    } as const
-    
-    return (
-      <Badge variant={colors[type as keyof typeof colors] || "outline"}>
-        {type.replace("-", " ").toUpperCase()}
-      </Badge>
-    )
-  }
+  // Note: Employment type field doesn't exist in current database schema
+  // When implemented, this should display the actual employment type from the database
 
   // Date range formatter with error handling
   const formatDateRange = (startDate: string, endDate: string | null, isCurrent: boolean) => {
@@ -189,7 +174,11 @@ export function ExperiencesManagement() {
     {
       key: 'employment_type',
       header: 'Type',
-      render: () => getEmploymentTypeBadge("full-time"), // Placeholder since field doesn't exist
+      render: () => (
+        <span className="text-muted-foreground text-sm italic">
+          Not available
+        </span>
+      ), // Employment type field doesn't exist in current database schema
     },
     {
       key: 'technologies',
@@ -209,6 +198,7 @@ export function ExperiencesManagement() {
       onSearchChange={setSearchTerm}
       renderActions={renderActions}
       // onAdd functionality temporarily disabled until CRUD API is implemented
+      // TODO: When implementing dialogs, use the shared FormDialog component from ./shared/form-dialog.tsx
       // onAdd={openCreateDialog}
       // addButtonText="Add Experience"
     />
