@@ -1,4 +1,4 @@
-```typescript
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -373,4 +373,4 @@ export function FeedbackTable() {
     </div>
   );
 }
-```
+
