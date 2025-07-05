@@ -28,7 +28,7 @@ interface Feedback {
 }
 
 interface FeedbackWithSenderInfo extends Feedback {
-  connections: { name: string; email: string; subject: string;xaf status: 'read' | 'unread' | 'replied' } | null;
+  connections: { name: string; email: string; subject: string; status: 'read' | 'unread' | 'replied' } | null;
 }
 
 const MAX_RETRIES = 3;
@@ -102,6 +102,16 @@ export async function deleteProject(id: string): Promise<boolean> {
   });
 }
 
+export async function getAllProjects(): Promise<Project[]> {
+  return withRetry(async () => {
+    const { data, error } = await supabase.from("projects").select("*");
+    if (error) {
+      throw new Error(`Error fetching projects: ${error.message}`);
+    }
+    return data as Project[];
+  });
+}
+
 export async function getProjectById(id: string): Promise<Project | null> {
   return withRetry(async () => {
     const { data: project, error: projectError } = await supabase
@@ -122,10 +132,7 @@ export async function getProjectById(id: string): Promise<Project | null> {
 // Feedback Management
 export async function updateFeedbackStatus(id: string, status: 'read' | 'unread' | 'replied'): Promise<boolean> {
   return withRetry(async () => {
-    const { error } = await supabase
-      .from("feedback")
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq("id", id);
+    const { error } = await supabase.from("feedback").update({ status }).eq("id", id);
     if (error) {
       throw new Error(`Error updating feedback status: ${error.message}`);
     }
@@ -160,7 +167,7 @@ export async function replyToFeedback(feedbackId: string, replyMessage: string):
   return withRetry(async () => {
     const { error } = await supabase
       .from("feedback")
-      .update({ reply_message: replyMessage, status: 'replied', updated_at: new Date().toISOString() })
+      .update({ reply_message: replyMessage, status: 'replied' })
       .eq("id", feedbackId);
     if (error) {
       throw new Error(`Error replying to feedback: ${error.message}`);
